@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+    <title>Facture</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font: 400 1rem 'Open Sans', sans-serif;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        .invoice-container {
+            margin: 2rem auto;
+            padding: 2rem;
+            max-width: 900px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-header {
+            border-bottom: 3px solid #6a1b9a;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .invoice-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6a1b9a;
+        }
+
+        .invoice-details {
+            margin-bottom: 1.5rem;
+        }
+
+        .invoice-details address,
+        .invoice-num {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .invoice-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #333;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: #6a1b9a;
+            color: white;
+            font-weight: bold;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background: #f3f3f3;
+        }
+
+        .table tbody tr:hover {
+            background: #ececec;
+        }
+
+        .table td,
+        .table th {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .invoice-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .text-success {
+            color: #28a745 !important;
+            font-weight: bold;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+
+        h5 {
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header Section -->
+        <div class="invoice-header">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="invoice-logo">
+                        MOBILE HOUSE
+                    </div>
+                </div>
+                <div class="col-md-6 text-right">
+                    <address>
+                        <strong>Mobile House</strong><br>
+                        Totsi à côté du Lycée Protestant<br>
+                        Lomé, Togo<br>
+                        +228 70 14 69 79
+                    </address>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Details -->
+        <div class="invoice-details">
+            <div class="row">
+                <div class="col-md-8">
+                    <address>
+                        <strong>Nom du client :</strong> {{obj.customer.name}}<br>
+                        <strong>Adresse du client :</strong> {{obj.customer.address}}, {{obj.customer.city}}, Togo
+                    </address>
+                </div>
+                <div class="col-md-4 text-right">
+                    <div class="invoice-num">
+                        <strong>Numero de la facture :</strong> {{obj.get_invoice_type_display}} - #00{{obj.id}}<br>
+                        <strong>Date :</strong> {{obj.invoice_date_time}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Items -->
+        <div class="invoice-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Articles</th>
+                        <th>ID Produit</th>
+                        <th>Quantites</th>
+                        <th>Prix Unitaire</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {% for article in articles %}
+                    <tr>
+                        <td>{{ article.name }}</td>
+                        <td>{{ article.id }}</td>
+                        <td>{{ article.quantity }}</td>
+                        <td>{{ article.unit_price }}</td>
+                        <td><strong>{{ article.get_total }}</strong></td>
+                    </tr>
+                  {% endfor %}
+                    <tr>
+                        <td colspan="3">
+                            <strong>Commentaires:</strong> {{obj.comments}}
+                        </td>
+                        <td><strong>Total</strong></td>
+                        <td><strong>{{obj.get_total}} FCFA</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><strong>PAID:</strong></td>
+                        <td>
+                            {% if obj.paid %}
+                                <span class="text-success">OUI</span>
+                            {% else %}
+                                <span class="text-danger">NON</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="invoice-footer">
+            <strong>Mobile House! Le Meilleur Sinon Rien, Votre Satisfaction est notre preocupation.</strong>
+        </div>
+    </div>
+</body>
+</html>

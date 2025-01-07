@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <h1 height="60px" class="{{ message.tags }}">{{ message }}</h1>
+        {% endfor %}
+    </div>
+{% endif %}
+<br><br>
+<h1 class="text-capitalize text-center mx-10 bg-dark text-white">ENRESGISTRER UN NOUVEAU CLIENT</h1>
+
+<form method="post">
+    {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="name">Nom</label>
+                <input name="name" required type="text" class="form-control" id="name" placeholder="customer first and last name">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="email">Email</label>
+                <input name="email" required type="email" class="form-control" id="email" placeholder="customer email">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="phone">Telephone</label>
+                <input name="phone" required type="number" class="form-control" id="phone" placeholder="customer phone number">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-goup col-md-6">
+                <label for="sex">Sexe</label>
+                <select name="sex" class="form-control" required id="sex">
+                    <option>Choisir le genre ..</option>
+                    <option value="M">Masculin</option>
+                    <option value="F">Feminin</option>
+                </select>
+            </div>
+            <div class="form-goup col-md-6">
+                <label for="age">Age</label>
+                <select name="age" class="form-control" required id="age">
+                    <option>Choisir le tranche d'age ..</option>
+                    <option value="0-15">0-18</option>
+                    <option value="0-15">19-35</option>
+                    <option value="0-15">36-55</option>
+                    <option value="0-15">56-75</option>
+                    <option value="0-15">76-85</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <label for="address">Adresse</label>
+                <input name="address" type="text" required class="form-control" id="address" placeholder="customer address">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="city">Ville</label>
+                <input name="city" type="text" class="form-control" id="city" placeholder="customer city">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="zip">BP</label>
+                <input name="zip" type="text" class="form-control" id="zip" placeholder="customer zip code">
+            </div>
+        </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>
+<br><br>
+{% endblock content %}

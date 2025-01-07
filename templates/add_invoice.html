@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <h1 class="{{ message.tags }}">{{ message }}</h1>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<br><br>
+<h1 class="text-capitalize text-center mx-10 bg-dark text-white">ENREGISTRER UNE NOUVELLE FACTURE</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="form-group col-md-12">
+            <label for="customer">Client</label>
+            <select name="customer" required id="customer" class="form-control">
+                <option>Choisir le client ... </option>
+                {% for customer in customers %}
+                    <option value="{{customer.id}}">{{forloop.counter}}.{{customer.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-12">
+            <label for="invoice">Type de facture</label>
+            <select name="invoice_type" required id="invoice" class="form-control">
+                <option>Choisisr le type de facture ... </option>
+                <option value="R">RECU</option>
+                <option value="P">FACTURE PROFORMAT</option>
+                <option value="I">FACTURE</option>
+            </select>
+        </div>
+    </div>
+    <div id="wrapper">
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="article-1">#1 Nom de l'article</label>
+                <input type="text" name="article" required class="form-control" id="article-1">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="qty-1">Quantite</label>
+                <input type="number" min="1" step="0.1" name="qty" required class="form-control" id="qty-1">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="unit-1">Prix Unitaire</label>
+                <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="unit" required class="form-control" id="unit-1">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="total-a-1">Total</label>
+                <input type="number" min="1" step="0.1" readonly name="total-a" required class="form-control" id="total-a-1">
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-12">
+            <label for="total">Total</label>
+            <input value="0" type="number" step="0.1" name="total" readonly class="form-control" id="total">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="comment">Commentaires</label>
+            <textarea class="form-control" name="comment" id="comment" cols="30" rows="1"></textarea>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>
+<br><br>
+<div class="form-row">
+    <button id="btn-add" class="btn btn-outline-danger w58 col-md-6">Ajouter une ligne d'article</button>
+    <button id="btn-remove" class="btn btn-outline-warning w58 col-md-6">Supprimer une ligne d'article</button>
+</div>
+
+<br><br><br><br>
+
+<script type="text/javascript">
+    // Ajouter une nouvelle ligne d'article
+    $(document).on('click', '#btn-add', function(e) {
+        e.preventDefault(); // Empêche le comportement par défaut du bouton
+        var number = $('#wrapper').children().length + 1;
+        let formAdd = `
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="article-${number}">#${number} Item Name</label>
+                    <input type="text" name="article" required class="form-control" id="article-${number}">
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="qty-${number}">Quantity</label>
+                    <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="qty" required class="form-control" id="qty-${number}">
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="unit-${number}">Unit Price</label>
+                    <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="unit" required class="form-control" id="unit-${number}">
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="total-a-${number}">Total</label>
+                    <input type="number" min="1" step="0.1" readonly name="total-a" required class="form-control" id="total-a-${number}">
+                </div>
+            </div>`;
+        $("#wrapper").append(formAdd); // Ajouter une nouvelle ligne
+    });
+
+    // Supprimer la dernière ligne d'article
+    $(document).on('click', '#btn-remove', function(e) {
+        e.preventDefault(); // Empêche le comportement par défaut du bouton
+        $("#wrapper").children().last().remove();
+        updateTotal(); // Recalculer le total après suppression
+    });
+
+    // Calcul du total pour une ligne
+    function handleChangeSingleArticle(id) {
+        let articleId = id.split('-')[1]; // Extraire le numéro de l'article
+        let qty = parseFloat($(`#qty-${articleId}`).val()) || 0;
+        let unit = parseFloat($(`#unit-${articleId}`).val()) || 0;
+        let totalLine = qty * unit;
+        $(`#total-a-${articleId}`).val(totalLine.toFixed(2)); // Mettre à jour le total de la ligne
+        updateTotal(); // Recalculer le total général
+    }
+
+    // Calcul du total général
+    function updateTotal() {
+        let grandTotal = 0;
+        $('[id^="total-a-"]').each(function() {
+            grandTotal += parseFloat($(this).val()) || 0;
+        });
+        $('#total').val(grandTotal.toFixed(2)); // Mettre à jour le total général
+    }
+</script>
+
+
+
+{% endblock content%}
