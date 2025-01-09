@@ -39,24 +39,24 @@ class HomeView(LoginRequiredSuperuserMixin, View):
                 else:
                     obj.paid = False
                 obj.save()
-                messages.success(request, "Change made successfully.")
+                messages.success(request, "Modification effectuée avec succès.")
 
             except Exception as e:
-                messages.error(request, f"Sorry, the following error has occured{e}.")
+                messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
 
 
         # Suppression
         if request.POST.get('id_supprimer'):
             try:
                 invoice_id = request.POST.get('id_supprimer')
-                print(f"Received ID for deletion: {invoice_id}")  # Debugging
+                print(f"ID reçu pour suppression : {invoice_id}")  # Debugging
                 obj = Invoice.objects.get(pk=invoice_id)
                 obj.delete()
-                messages.success(request, "The deletion was successful.")
+                messages.success(request, "La suppression a réussi.")
             except Invoice.DoesNotExist:
-                messages.error(request, "The invoice does not exist.")
+                messages.error(request, "La facture n'existe pas.")
             except Exception as e:
-                messages.error(request, f"Sorry, the following error has occurred: {e}.")
+                messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
 
         items = pagination(request, self.invoices)
         self.context['invoices'] = items
@@ -81,13 +81,13 @@ class AddCustomerView(LoginRequiredSuperuserMixin, View):
         try:
             created = Customer.objects.create(**data)
             if created:
-                messages.success(request, "Customer register successfully.")
+                messages.success(request, "Le client s'est enregistré avec succès.")
                 return redirect('add-invoice')
             else:
-                messages.error(request, "Sorry, please try again the sent data is corrupt.")
+                messages.error(request, "Désolé, veuillez réessayer, les données envoyées sont corrompues.")
                 return render(request, self.template_name)
         except Exception as e:
-            messages.error(request, f"Sorry, our system si detecting the following issues {e}.")
+            messages.error(request, f"Désolé, le système détecte les problèmes suivants {e}.")
             return render(request, self.template_name)
 
 
@@ -138,14 +138,14 @@ class AddInvoiceView(LoginRequiredSuperuserMixin, View):
             created = Article.objects.bulk_create(items)
             
             if created:
-                messages.success(request, "Data saved successfully.")
+                messages.success(request, "Données enregistrées avec succès.")
                 return redirect('home')
             else:
-                messages.error(request, "Sorry, please try again; the sent data is corrupt.")
+                messages.error(request, "Désolé, veuillez réessayer ; les données envoyées sont corrompues.")
                 return redirect('add-invoice')
         
         except Exception as e:
-            messages.error(request, f"Sorry, the following error has occurred: {e}.")
+            messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
         
         return render(request, self.template_name, self.context)
 

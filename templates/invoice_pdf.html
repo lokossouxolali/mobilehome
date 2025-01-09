@@ -153,7 +153,7 @@
                 <thead>
                     <tr>
                         <th>Articles</th>
-                        <th>ID Produit</th>
+                        <!--<th>ID Produit</th>-->
                         <th>Quantites</th>
                         <th>Prix Unitaire</th>
                         <th>Total</th>
@@ -163,21 +163,21 @@
                   {% for article in articles %}
                     <tr>
                         <td>{{ article.name }}</td>
-                        <td>{{ article.id }}</td>
+                        <!--<td>{{ article.id }}</td>-->
                         <td>{{ article.quantity }}</td>
                         <td>{{ article.unit_price }}</td>
                         <td><strong>{{ article.get_total }}</strong></td>
                     </tr>
                   {% endfor %}
                     <tr>
-                        <td colspan="3">
+                        <td colspan="2">
                             <strong>Commentaires:</strong> {{obj.comments}}
                         </td>
                         <td><strong>Total</strong></td>
                         <td><strong>{{obj.get_total}} FCFA</strong></td>
                     </tr>
                     <tr>
-                        <td colspan="4"><strong>PAID:</strong></td>
+                        <td colspan="3"><strong>LA FACTURE A ETE PAYER ?:</strong></td>
                         <td>
                             {% if obj.paid %}
                                 <span class="text-success">OUI</span>
