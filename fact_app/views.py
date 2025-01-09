@@ -185,3 +185,70 @@ def get_invoice_pdf(request, *args, **kwargs):
 
         except Exception as e:
             return HttpResponse(f"Erreur lors de la génération du PDF : {e}", status=500)
+        
+
+# views.py
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django import forms
+
+# Formulaire personnalisé pour créer un administrateur
+class AdminCreationForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_staff = True  # Définit l'utilisateur comme administrateur
+        user.set_password(self.cleaned_data['password'])  # Hache le mot de passe
+        if commit:
+            user.save()
+        return user
+
+# Vue pour ajouter un administrateur
+@login_required
+def add_admin(request):
+    if request.method == 'POST':
+        form = AdminCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Administrateur créé avec succès !")
+            return redirect('admin_list')  # Remplacez par votre URL cible
+    else:
+        form = AdminCreationForm()
+
+    return render(request, 'add_admin.html', {'form': form})
+
+# views.py
+@login_required
+def admin_list(request):
+    admins = User.objects.filter(is_staff=True)
+    return render(request, 'admin_list.html', {'admins': admins})
+
+
+#Vue pour modifier un administrateur
+"""from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .forms import AdminForm
+
+def edit_admin(request, admin_id):
+    # Récupérer l'administrateur à partir de son ID
+    admin = get_object_or_404(User, id=admin_id)
+
+    # Si la méthode est POST, traiter les données du formulaire
+    if request.method == 'POST':
+        form = AdminForm(request.POST, instance=admin)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "L'administrateur a été modifié avec succès.")
+            return redirect('admin-list')  # Rediriger vers la liste des administrateurs
+        else:
+            messages.error(request, "Erreur lors de la modification de l'administrateur.")
+    else:
+        form = AdminForm(instance=admin)
+
+    return render(request, 'edit_admin.html', {'form': form, 'admin': admin})"""
