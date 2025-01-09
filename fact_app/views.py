@@ -172,12 +172,16 @@ def get_invoice_pdf(request, *args, **kwargs):
         options = {
             'page-size':'Letter',
             'encoding':'UTF-8',
-            "enable-local-file-access": ""
+            'enable-local-file-access': ''
         }
 
         #Generate pdf
-        pdf = pdfkit.from_string(html, False, options)
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = "attachement"
+        try:
+        # Générer le PDF
+            pdf = pdfkit.from_string(html, False, options)
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            return response
 
-        return response
+        except Exception as e:
+            return HttpResponse(f"Erreur lors de la génération du PDF : {e}", status=500)
