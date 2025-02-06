@@ -132,3 +132,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 LOGIN_URL = '/admin/login/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # ou votre serveur SMTP
+EMAIL_PORT = 587  # ou le port de votre serveur SMTP
+EMAIL_USE_TLS = True  # ou EMAIL_USE_SSL selon votre serveur
+EMAIL_HOST_USER = 'lxolalikokouguel@gmail.com'  # Adresse e-mail émettrice
+EMAIL_HOST_PASSWORD = 'ltnq wiwg yiid jccb'  # Mot de passe de l'adresse e-mail
+DEFAULT_FROM_EMAIL = 'urbainbalogou19@gmail.com' # Adresse e-mail par défaut

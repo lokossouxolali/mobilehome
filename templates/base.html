@@ -15,30 +15,18 @@
     <!--Header-->
 
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">MOBILE-HOUSE</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-          
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav mr-auto">
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
-                    More option
-                  </a>
-                  <div class="dropdown-menu">
-                    <a class="dropdown-item" href="{% url 'home' %}">Acceuil</a>
-                    <a class="dropdown-item" href="{% url 'add-admin' %}">Ajouter un administrateur</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Statistiques</a>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </nav>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'home' %}">MOBILE-HOUSE</a>
+        <div class="d-flex justify-content-around w-100">
+          <a href="{% url 'home' %}" class="btn btn-primary">Accueil</a>
+          <a href="{% url 'article-list' %}" class="btn btn-primary">Liste des articles</a>
+          <a href="{% url 'sales-summary-list' %}" class="btn btn-primary">Liste des ventes</a>
+          <a href="{% url 'customer-list' %}" class="btn btn-primary">Liste des clients</a>
+          <a href="{% url 'add-admin' %}" class="btn btn-primary">Ajouter un administrateur</a>
+        </div>
+      </nav>
     </header>
+    
 
     <div class="container">
       <div class="wrapper">

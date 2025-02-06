@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <script>
+        setTimeout(function() {
+            document.querySelector('.messages').style.display = 'none';
+        }, 15000); // 15 secondes
+    </script>
+{% endif %}
+<br><br>
+
+<div class="form-group ">
+    <input id="search" class="form-control" type="text" placeholder="Rechercher....">
+</div>
+
+<div>
+    <table class="table table-striped-columns">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">ARTICLE</th>
+                <th scope="col">QUANTITE VENDUE</th>
+                <th scope="col">DATE DE VENTE</th>
+                <th scope="col">CLIENT</th>
+                <th scope="col">PRIX UNITAIRE</th>
+                <th scope="col">PRIX TOTAL</th>
+                <!-- <th scope="col">ACTION</th>  Removed action column -->
+            </tr>
+        </thead>
+        <tbody id="myTable">
+            {% if sales_data %}
+            {% for sale in sales_data %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>  <!-- Simple row number -->
+                <td>{{ sale.article_name }}</td>
+                <td>{{ sale.quantity_sold }}</td>
+                <td>{{ sale.sale_date }}</td>
+                <td>{{ sale.customer_name }}</td>
+                <td>{{ sale.unit_price }}</td>
+                <td>{{ sale.total_price }}</td>
+                <!--<td>  Removed action column -->
+                    <!-- Add action buttons here if needed in future -->
+                    <!--  <button id="btn-sale-details" type="button" class="btn btn-sm btn-info">Details</button> -->
+                <!--</td>  Removed action column -->
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center">Aucune vente trouvée.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+    // Search functionality
+    $(document).ready(function () {
+        $("#search").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+</script>
+
+{% endblock %}

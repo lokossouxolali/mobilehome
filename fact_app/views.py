@@ -268,4 +268,43 @@ def add_article(request):
 
 def article_list(request):
     articles = Article.objects.all()  # Récupérer tous les produits
+
+    if request.method == 'POST' and 'id_supprimer' in request.POST:
+        try:
+            article_id = request.POST.get('id_supprimer')
+            print(f"ID reçu pour suppression : {article_id}")  # Debugging
+            # Get the Article object
+            article = Article.objects.get(pk=article_id)
+            # Delete the Article object
+            article.delete()
+            messages.success(request, "L'article a été supprimé avec succès.")
+        except Article.DoesNotExist:
+            messages.error(request, "L'article n'existe pas.")
+        except Exception as e:
+            messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
+
+
     return render(request, 'article_list.html', {'articles': articles})
+
+def customer_list(request):
+    customers = Customer.objects.all()  # Récupérer tous les produits
+    return render(request, 'customer_list.html', {'customers': customers})
+
+def sales_summary(request):
+    sales_data = []
+    invoice_items = InvoiceItem.objects.all().order_by('invoice__invoice_date_time')
+
+    for item in invoice_items:
+        sales_data.append({
+            'article_name': item.article.name,
+            'quantity_sold': item.quantity,
+            'sale_date': item.invoice.invoice_date_time,
+            'customer_name': item.invoice.customer.name,
+            'unit_price': item.unit_price,
+            'total_price': item.total_price,
+        })
+
+    context = {
+        'sales_data': sales_data
+    }
+    return render(request, 'sales_summary_list.html', context)

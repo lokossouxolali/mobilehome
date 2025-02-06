@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <script>
+        setTimeout(function() {
+            document.querySelector('.messages').style.display = 'none';
+        }, 15000); // 15 secondes
+    </script>
+{% endif %}
+<br><br>
+
+<div class="row">
+    <a href="{% url 'add-customer' %}" class="btn col-md-4 btn-primary">
+        AJOUTER UN NOUVEAU CLIENT
+    </a>
+</div>
+
+<br> <br>
+
+<div class="form-group ">
+    <input id="search" class="form-control" type="text" placeholder="Rechercher....">
+</div>
+
+<div>
+    <table class="table table-striped-columns">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">NOM DU CLIENT</th>
+                <th scope="col">EMAIL</th>
+                <th scope="col">TELEPHONE</th>
+                <th scope="col">ADRESSE</th>
+                <th scope="col">ACTION</th>
+            </tr>
+        </thead>
+        <tbody id="myTable">
+            {% if customers %}
+            {% for customer in customers %}
+            <tr>
+                <th scope="row">{{ customer.pk }}</th>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone }}</td>
+                <td>{{ customer.address }}</td>
+                <td>
+                    <!-- Add action buttons here -->
+                    <button id="btn-customer-sup" type="button" data-toggle="modal" data-target="#supprimer"
+                        class="badge text-white bg-danger" title="Supprimer" data-id="{{ customer.pk }}"
+                        data-customer="{{ customer.name }}">SUPPRIMER
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Aucun client trouvé.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Pagination if needed -->
+    {% if customers.has_other_pages %}
+    <div class="btn-group" role="group" aria-label="Customer pagination">
+        {% if customers.has_previous %}
+        <a href="?page={{ customers.previous_page_number }}" class="btn btn-outline-primary">&laquo;</a>
+        {% endif %}
+        {% for page_number in customers.paginator.page_range %}
+        {% if customers.number == page_number %}
+        <button class="btn btn-outline-primary active">{{ page_number }}</button>
+        {% else %}
+        <a href="?page={{ page_number }}" class="btn btn-outline-primary">{{ page_number }}</a>
+        {% endif %}
+        {% endfor %}
+        {% if customers.has_next %}
+        <a href="?page={{ customers.next_page_number }}" class="btn btn-outline-primary">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="supprimer" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark" id="deleteModalLabel">SUPPRIMER CLIENT</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input name="id_supprimer" type="hidden" id="id_supprimer">
+                    <label id="label_id_s" class="text-dark checkbox-inline">
+                        <strong id="strong_id_s">Êtes-vous sûr de vouloir supprimer ce client ?</strong>
+                    </label>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">ANNULER</button>
+                        <button type="submit" class="btn btn-danger">SUPPRIMER</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Delete Customer
+    $(document).on('click', '#btn-customer-sup', function () {
+        let customer_id = $(this).data('id');
+        let customer_name = $(this).data('customer');
+        $('#id_supprimer').val(customer_id);
+    });
+
+    // Search functionality
+    $(document).ready(function () {
+        $("#search").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+</script>
+
+{% endblock %}
