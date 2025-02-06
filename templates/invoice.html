@@ -77,41 +77,35 @@
     										<thead>
     											<tr>
     												<th>ARTICLES</th>
-													<th>ID PRODUIT</th>
 													<th>QUANTITE</th>
 													<th>PRIX UNITAIRE</th>
 													<th>TOTAL</th>
     											</tr>
     										</thead>
     										<tbody>
-                                              {% for article in articles %}  
+												{% for invoiceitem in obj.invoice_items.all %}
                                               
     											<tr>
 
                                                    
 
                                                     <td>
-    													{{ article.name }}
+    													{{ invoiceitem.article.name }}
     													
     												</td>
 
 													<td>
-    													{{ article.id }}
+    													{{ invoiceitem.quantity }}
     													
     												</td>
 
 													<td>
-    													{{ article.quantity }}
+    													{{ invoiceitem.unit_price }}
     													
     												</td>
 
 													<td>
-    													{{ article.unit_price }}
-    													
-    												</td>
-
-													<td>
-    													{{ article.get_total }}
+    													{{ invoiceitem.total_price }}
     													
     												</td>
 
@@ -122,7 +116,7 @@
     											
     											
     											<tr>
-    												<td>Comment: {{obj.comments}}</td>
+    												<td>Commentaires: {{obj.comments}}</td>
     												<td colspan="2">
 														<p>
 															Subtotal<br>
@@ -133,11 +127,11 @@
     												</td>			
     												<td>
     													<p>
-    														{{obj.get_total}} FCFA<br>
+    														{{obj.total}} FCFA<br>
     														00.00 FCFA<br>
     														00.00 FCFA<br>
     													</p>
-    													<h5 class="text-success"><strong>${{obj.get_total}} FCFA</strong></h5>
+    													<h5 class="text-success"><strong>{{obj.total}} FCFA</strong></h5>
     												</td>
                                                     <td> 
                                                             PAYER ?:                    

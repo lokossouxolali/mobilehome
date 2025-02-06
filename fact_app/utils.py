@@ -20,12 +20,13 @@ def pagination(request, invoices):
         paginator = Paginator(invoices, items_per_page)
         return items_page
 
+from django.shortcuts import get_object_or_404
+
 def get_invoice(pk):
-        
-        obj = Invoice.objects.get(pk=pk)
-        articles = obj.article_set.all()
-        context = {
-            'obj': obj,
-            'articles': articles
-        }
-        return context
+    obj = Invoice.objects.get(pk=pk)
+    invoice_items = obj.invoice_items.all()
+    context = {
+        'obj': obj,
+        'invoice_items': invoice_items
+    }
+    return context

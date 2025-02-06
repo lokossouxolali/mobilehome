@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .decorators import *
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -91,63 +92,76 @@ class AddCustomerView(LoginRequiredSuperuserMixin, View):
             return render(request, self.template_name)
 
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db import transaction
+from .models import Invoice, Customer, Article, InvoiceItem
+from decimal import Decimal
+
 class AddInvoiceView(LoginRequiredSuperuserMixin, View):
     template_name = "add_invoice.html"
-    customers = Customer.objects.select_related('save_by').all()
-    context = {
-        'customers': customers
-    }
-    
-    def get(self, request, *arg, **kwargs):
-        return render(request, self.template_name, self.context)
-    
+
+    def get(self, request, *args, **kwargs):
+        customers = Customer.objects.all()
+        articles = Article.objects.all()
+        context = {
+            'customers': customers,
+            'articles': articles
+        }
+        return render(request, self.template_name, context)
+
     @transaction.atomic()
     def post(self, request, *args, **kwargs):
-        items = []
         try:
-            customer = request.POST.get('customer')
-            type = request.POST.get('invoice_type')  # Correspond au champ type de la facture
-            articles = request.POST.getlist('article')  # Utiliser .getlist pour une liste
-            qties = request.POST.getlist('qty')  # Quantités
-            units = request.POST.getlist('unit')  # Prix unitaire
-            total_a = request.POST.getlist('total-a')  # Totaux par article
-            total = request.POST.get('total')  # Total général
-            comment = request.POST.get('comment')  # Commentaire
-            
+            customer_id = request.POST.get('customer')
+            invoice_type = request.POST.get('invoice_type')
+            article_ids = request.POST.getlist('article')
+            quantities = request.POST.getlist('qty')
+            unit_prices = request.POST.getlist('unit')
+            comments = request.POST.get('comment')
+
+            # Récupérer l'objet Customer
+            customer = Customer.objects.get(id=customer_id)
+
             # Création de l'objet facture
             invoice_object = {
-                'customer_id': customer,
+                'customer': customer,  # Utiliser l'objet Customer, pas l'ID
                 'save_by': request.user,
-                'total': total,
-                'invoice_type': type,
-                'comments': comment
+                'invoice_type': invoice_type,
+                'comments': comments
             }
             invoice = Invoice.objects.create(**invoice_object)
 
-            # Création des articles liés à la facture
-            for index, article in enumerate(articles):
-                data = Article(
-                    invoice_id=invoice.id,
-                    name=article,
-                    quantity=float(qties[index]),
-                    unit_price=float(units[index]),
-                    total=float(total_a[index]),
+            # Création des InvoiceItems et mise à jour du stock d'articles
+            for article_id, qty, unit_price in zip(article_ids, quantities, unit_prices):
+                article = Article.objects.get(id=article_id)
+                qty = Decimal(qty)
+                unit_price = Decimal(unit_price)
+
+                # Vérifiez si le stock est suffisant
+                if article.stock < qty:
+                    messages.error(request, f"Stock insuffisant pour l'article {article.name}.")
+                    return render(request, self.template_name)
+
+                # Créer l'InvoiceItem
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    article=article,
+                    quantity=qty,
+                    unit_price=unit_price
                 )
-                items.append(data)
-            
-            created = Article.objects.bulk_create(items)
-            
-            if created:
-                messages.success(request, "Données enregistrées avec succès.")
-                return redirect('home')
-            else:
-                messages.error(request, "Désolé, veuillez réessayer ; les données envoyées sont corrompues.")
-                return redirect('add-invoice')
-        
+
+                # Décrémentez le stock de l'article
+                article.stock -= qty
+                article.save()  # Enregistrez les modifications
+
+            messages.success(request, "Facture créée avec succès.")
+            return redirect('home')
+
         except Exception as e:
-            messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
-        
-        return render(request, self.template_name, self.context)
+            messages.error(request, f"Désolé, une erreur s'est produite : {e}.")
+
+        return render(request, self.template_name)
 
 class InvoiceVisualizationView(LoginRequiredSuperuserMixin, View):
     template_name = 'invoice.html'
@@ -228,27 +242,30 @@ def admin_list(request):
     admins = User.objects.filter(is_staff=True)
     return render(request, 'admin_list.html', {'admins': admins})
 
+# Vue pour ajouter un nouvel article
+def add_article(request):
+    if request.method == "POST":
+        try:
+            # Récupération des données du formulaire
+            name = request.POST.get('name')
+            stock = request.POST.get('stock')
 
-#Vue pour modifier un administrateur
-"""from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
-from django.contrib import messages
-from .forms import AdminForm
+            # Création de l'article dans la base de données
+            article = Article.objects.create(
+                name=name,
+                stock=stock
+            )
 
-def edit_admin(request, admin_id):
-    # Récupérer l'administrateur à partir de son ID
-    admin = get_object_or_404(User, id=admin_id)
+            # Message de succès
+            messages.success(request, "L'article a été ajouté avec succès.")
+            return redirect('article-list')  # Rediriger vers la même page ou une autre page après l'ajout
 
-    # Si la méthode est POST, traiter les données du formulaire
-    if request.method == 'POST':
-        form = AdminForm(request.POST, instance=admin)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "L'administrateur a été modifié avec succès.")
-            return redirect('admin-list')  # Rediriger vers la liste des administrateurs
-        else:
-            messages.error(request, "Erreur lors de la modification de l'administrateur.")
-    else:
-        form = AdminForm(instance=admin)
+        except Exception as e:
+            messages.error(request, f"Erreur lors de l'ajout de l'article : {e}")
 
-    return render(request, 'edit_admin.html', {'form': form, 'admin': admin})"""
+    # Si la requête est en GET, on affiche simplement le formulaire
+    return render(request, "add_article.html")
+
+def article_list(request):
+    articles = Article.objects.all()  # Récupérer tous les produits
+    return render(request, 'article_list.html', {'articles': articles})

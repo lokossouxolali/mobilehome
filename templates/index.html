@@ -11,16 +11,16 @@
 {% endif %}
 <br><br>
 <div class="row">
-   <a href="{% url 'add-invoice' %}" class="btn col-md-4 btn-primary">
-      ENREGISTRER UNE NOUVELLE FACTURE <span class="badge text-bg-secondary"></span>
+   <a href="{% url 'add-invoice' %}" class="btn col-md-3 btn-primary mx-4">
+      ENREGISTRER FACTURE <span class="badge text-bg-secondary"></span>
    </a>
 
-   <a href='#' class="col-md-4">
-      <span class="badge text-bg-secondary"></span>
+   <a href="{% url 'add-article' %}" class="btn col-md-3 btn-primary mx-4">
+      ENREGISTRER ARTICLE <span class="badge text-bg-secondary"></span>
    </a>
 
-   <a href="{% url 'add-customer' %}" class="btn col-md-4 btn-primary">
-      ENREGISTRER UN NOUVEAU CLIENT <span class="badge text-bg-secondary"></span>
+   <a href="{% url 'add-customer' %}" class="btn col-md-3 btn-primary mx-4">
+      ENREGISTRER CLIENT <span class="badge text-bg-secondary"></span>
    </a>
 
 </div>

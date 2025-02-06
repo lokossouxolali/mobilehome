@@ -40,8 +40,13 @@
     <div id="wrapper">
         <div class="form-row">
             <div class="form-group col-md-4">
-                <label for="article-1">#1 Nom de l'article</label>
-                <input type="text" name="article" required class="form-control" id="article-1">
+                <label for="article-1">#1 Choisir l'article</label>
+                <select name="article" required id="article" class="form-control">
+                    <option>Choisir l'article ... </option>
+                    {% for article in articles %}
+                        <option value="{{article.id}}">{{forloop.counter}}.{{article.name}}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-group col-md-2">
                 <label for="qty-1">Quantite</label>
@@ -87,8 +92,13 @@
         let formAdd = `
             <div class="form-row">
                 <div class="form-group col-md-4">
-                    <label for="article-${number}">#${number} Item Name</label>
-                    <input type="text" name="article" required class="form-control" id="article-${number}">
+                    <label for="article-${number}">#${number} Choisir l'article</label>
+                    <select name="article" required id="article" class="form-control">
+                        <option>Choisir l'article ... </option>
+                        {% for article in articles %}
+                            <option value="{{article.id}}">{{forloop.counter}}.{{article.name}}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="qty-${number}">Quantity</label>
@@ -105,6 +115,7 @@
             </div>`;
         $("#wrapper").append(formAdd); // Ajouter une nouvelle ligne
     });
+
 
     // Supprimer la dernière ligne d'article
     $(document).on('click', '#btn-remove', function(e) {

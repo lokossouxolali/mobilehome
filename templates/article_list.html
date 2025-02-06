@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <h3 class="{{ message.tags }}">{{ message }}</h3>
+        {% endfor %}
+    </div>
+{% endif %}
+<br><br>
+
+<div class="row">
+   <a href="{% url 'add-article' %}" class="btn col-md-4 btn-primary">
+      AJOUTER UN NOUVEAU PRODUIT <span class="badge text-bg-secondary"></span>
+   </a>
+</div>
+
+<br> <br>
+
+<div class="form-group ">
+   <input id="search" class="form-control" type="text" placeholder="Rechercher....">
+</div>
+
+<div>
+   <table class="table table-striped-columns">
+      <thead>
+         <tr>
+            <th scope="col">#</th>
+            <th scope="col">NOM DU PRODUIT</th>
+            <th scope="col">STOCK</th>
+            <th scope="col">DATE D'AJOUT</th>
+            <th scope="col">ACTION</th>
+         </tr>
+      </thead>
+      <tbody id="myTable">
+         {% if articles %}
+         {% for article in articles %}
+         <tr>
+            <th scope="row">{{ product.pk }}</th>
+            <td>{{ article.name }}</td>
+            <td>{{ article.stock }}</td>
+            <td>{{ article.created_at }}</td>
+            <td>
+               <!-- Ajoutez ici des boutons d'action si nécessaire -->
+               <button id="btn-article-sup" type="button" data-toggle="modal" data-target="#supprimer"
+                  class="badge text-white bg-danger" title="Supprimer" data-id="{{ article.pk }}"
+                  data-product="{{ article.name }}">SUPPRIMER
+               </button>
+            </td>
+         </tr>
+         {% endfor %}
+         {% else %}
+         <tr>
+            <td colspan="5" class="text-center">Aucun produit trouvé.</td>
+         </tr>
+         {% endif %}
+      </tbody>
+   </table>
+
+   <!-- Pagination si nécessaire -->
+   {% if products.has_other_pages %}
+   <div class="btn-group" role="group" aria-label="Item pagination">
+      {% if products.has_previous %}
+         <a href="?page={{ products.previous_page_number }}" class="btn btn-outline-primary">&laquo;</a>
+      {% endif %}
+      {% for page_number in products.paginator.page_range %}
+         {% if products.number == page_number %}
+            <button class="btn btn-outline-primary active">{{ page_number }}</button>
+         {% else %}
+            <a href="?page={{ page_number }}" class="btn btn-outline-primary">{{ page_number }}</a>
+         {% endif %}
+      {% endfor %}
+      {% if products.has_next %}
+         <a href="?page={{ products.next_page_number }}" class="btn btn-outline-primary">&raquo;</a>
+      {% endif %}
+   </div>
+   {% endif %}
+</div>
+
+<!-- Modal suppression -->
+<div class="modal fade" id="supprimer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+   aria-hidden="true">
+   <div class="modal-dialog" role="document">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title text-dark" id="exampleModalLabel">SUPPRIMER PRODUIT</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <div class="modal-body">
+            <form method="post">
+               {% csrf_token %}
+               <input name="id_supprimer" type="hidden" id="id_supprimer">
+               <label id="label_id_s" class="text-dark checkbox-inline"><strong id="strong_id_s">Êtes-vous sûr de vouloir supprimer ce produit ?</strong></label>
+
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">ANNULER</button>
+                  <button type="submit" class="btn btn-danger">SUPPRIMER</button>
+               </div>
+            </form>
+         </div>
+
+      </div>
+   </div>
+</div>
+
+<script type="text/javascript">
+   // Suppression de produit
+   $(document).on('click', '#btn-product-sup', function(){
+      let product_id = $(this).data('id');
+      let product_name = $(this).data('product');
+      $('#id_supprimer').val(product_id);
+   });
+
+   // Fonctionnalité de recherche
+   $(document).ready(function(){
+      $("#search").on("keyup", function(){
+         var value = $(this).val().toLowerCase();
+         $("#myTable tr").filter(function(){
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+         });
+      });
+   });
+</script>
+
+{% endblock %}
