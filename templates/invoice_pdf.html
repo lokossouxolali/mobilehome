@@ -172,7 +172,7 @@
                 <tbody>
                     {% for invoiceitem in obj.invoice_items.all %}
                     <tr>
-                        <td>{{ invoiceitem.article.name }}td>
+                        <td>{{ invoiceitem.article.name }}</td>
                         <td>{{ invoiceitem.quantity }}</td>
                         <td>{{ invoiceitem.unit_price }}</td>
                         <td><strong>{{ invoiceitem.total_price }}</strong></td>

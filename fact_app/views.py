@@ -140,7 +140,7 @@ class AddInvoiceView(LoginRequiredSuperuserMixin, View):
 
                 # Vérifiez si le stock est suffisant
                 if article.stock < qty:
-                    messages.error(request, f"Stock insuffisant pour l'article {article.name}.")
+                    messages.error(request, f"Stock insuffisant pour l'article {article.name}. Stock disponible : {article.stock}.")
                     return render(request, self.template_name)
 
                 # Créer l'InvoiceItem
