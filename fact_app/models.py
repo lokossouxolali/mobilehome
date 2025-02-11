@@ -38,7 +38,7 @@ class Invoice(models.Model):
         ('F', 'FACTURE')
     )
 
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.PROTECT)
     save_by = models.ForeignKey(User, on_delete=models.PROTECT)
     invoice_date_time = models.DateTimeField(auto_now_add=True)
     last_updated_date = models.DateTimeField(null=True)
@@ -61,9 +61,10 @@ class Invoice(models.Model):
         return total_amount
 
 class Article(models.Model):
-    name = models.CharField(max_length=132, unique=True)
+    name = models.CharField(max_length=132)
     stock = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
 
 
     class Meta:
@@ -74,15 +75,15 @@ class Article(models.Model):
         return f"{self.name} (Stock: {self.stock})"
     
 class InvoiceItem(models.Model):
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="invoice_items")
-    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.SET_NULL, related_name="invoice_items")
+    article = models.ForeignKey(Article, null=True, blank=True, on_delete=models.SET_NULL)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
-    # total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     @property
     def total_price(self):
         return self.quantity * self.unit_price
-
+    
     def __str__(self):
         return f"{self.article.name} - {self.quantity}"
+    

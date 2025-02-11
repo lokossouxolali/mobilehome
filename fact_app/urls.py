@@ -7,6 +7,7 @@ urlpatterns = [
     path('add_invoice', views.AddInvoiceView.as_view(), name='add-invoice'),
     path('add_article', views.add_article, name='add-article'),
     path('article_list', views.article_list, name='article-list'),
+    path('article/<int:article_id>/modifier/', views.edit_article, name='edit-article'),
     path('sales_summary_list', views.sales_summary, name='sales-summary-list'),
     path('customer_list', views.customer_list, name='customer-list'),
     path('view_invoice/<int:pk>', views.InvoiceVisualizationView.as_view(), name='view-invoice'),

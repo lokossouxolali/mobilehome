@@ -17,9 +17,29 @@
 {% endif %}
 <br><br>
 
-<div class="form-group ">
-    <input id="search" class="form-control" type="text" placeholder="Rechercher....">
+<!-- Filtres de recherche -->
+<div class="form-row">
+    <div class="col-md-3">
+        <input id="search_article" class="form-control" type="text" placeholder="Rechercher par article">
+    </div>
+    <div class="col-md-3">
+        <input id="search_date" class="form-control" type="date">
+    </div>
+    <div class="col-md-3">
+        <input id="search_price" class="form-control" type="number" step="0.01" placeholder="Rechercher par prix">
+    </div>
+    <div class="col-md-3">
+        <select id="search_period" class="form-control">
+            <option value="">Sélectionner période</option>
+            <option value="day">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois-ci</option>
+            <option value="year">Cette année</option>
+        </select>
+    </div>
 </div>
+
+<br>
 
 <div>
     <table class="table table-striped-columns">
@@ -32,24 +52,19 @@
                 <th scope="col">CLIENT</th>
                 <th scope="col">PRIX UNITAIRE</th>
                 <th scope="col">PRIX TOTAL</th>
-                <!-- <th scope="col">ACTION</th>  Removed action column -->
             </tr>
         </thead>
         <tbody id="myTable">
             {% if sales_data %}
             {% for sale in sales_data %}
             <tr>
-                <th scope="row">{{ forloop.counter }}</th>  <!-- Simple row number -->
-                <td>{{ sale.article_name }}</td>
-                <td>{{ sale.quantity_sold }}</td>
-                <td>{{ sale.sale_date }}</td>
-                <td>{{ sale.customer_name }}</td>
-                <td>{{ sale.unit_price }}</td>
-                <td>{{ sale.total_price }}</td>
-                <!--<td>  Removed action column -->
-                    <!-- Add action buttons here if needed in future -->
-                    <!--  <button id="btn-sale-details" type="button" class="btn btn-sm btn-info">Details</button> -->
-                <!--</td>  Removed action column -->
+                <th scope="row">{{ forloop.counter }}</th>  
+                <td class="article">{{ sale.article_name }}</td>
+                <td class="quantity">{{ sale.quantity_sold }}</td>
+                <td class="date" data-date="{{ sale.sale_date }}">{{ sale.sale_date }}</td>
+                <td class="customer">{{ sale.customer_name }}</td>
+                <td class="unit_price">{{ sale.unit_price }}</td>
+                <td class="total_price">{{ sale.total_price }}</td>
             </tr>
             {% endfor %}
             {% else %}
@@ -61,14 +76,45 @@
     </table>
 </div>
 
-
 <script>
-    // Search functionality
     $(document).ready(function () {
-        $("#search").on("keyup", function () {
-            var value = $(this).val().toLowerCase();
+        // Fonction de recherche par article, date et prix
+        $("#search_article, #search_date, #search_price, #search_period").on("keyup change", function () {
+            var articleValue = $("#search_article").val().toLowerCase();
+            var dateValue = $("#search_date").val();
+            var priceValue = $("#search_price").val();
+            var periodValue = $("#search_period").val();
+
             $("#myTable tr").filter(function () {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                var articleText = $(this).find(".article").text().toLowerCase();
+                var dateText = $(this).find(".date").text();
+                var priceText = $(this).find(".total_price").text();
+                var date = new Date($(this).find(".date").data("date"));
+                var now = new Date();
+
+                // Filtrage par période
+                var matchPeriod = true;
+                if (periodValue === "day") {
+                    matchPeriod = date.toDateString() === now.toDateString();
+                } else if (periodValue === "week") {
+                    var startOfWeek = now.getDate() - now.getDay();
+                    var endOfWeek = startOfWeek + 6;
+                    var weekStart = new Date(now.setDate(startOfWeek));
+                    var weekEnd = new Date(now.setDate(endOfWeek));
+                    matchPeriod = date >= weekStart && date <= weekEnd;
+                } else if (periodValue === "month") {
+                    matchPeriod = date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                } else if (periodValue === "year") {
+                    matchPeriod = date.getFullYear() === now.getFullYear();
+                }
+
+                // Filtrage par article et prix
+                var matchArticle = articleText.indexOf(articleValue) > -1;
+                var matchDate = dateValue ? dateText.indexOf(dateValue) > -1 : true;
+                var matchPrice = priceValue ? parseFloat(priceText) === parseFloat(priceValue) : true;
+
+                // Affichage ou masquage de la ligne en fonction des filtres
+                $(this).toggle(matchArticle && matchDate && matchPrice && matchPeriod);
             });
         });
     });

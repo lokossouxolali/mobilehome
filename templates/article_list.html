@@ -12,7 +12,7 @@
     <script>
         setTimeout(function() {
             document.querySelector('.messages').style.display = 'none';
-        }, 30000); // 30 secondes
+        }, 15000); // 15 secondes
     </script>
 {% endif %}
 <br><br>
@@ -43,6 +43,7 @@
       <tbody id="myTable">
          {% if articles %}
          {% for article in articles %}
+         {% if article.is_active %}
          <tr>
             <th scope="row">{{ article.pk }}</th>
             <td>{{ article.name }}</td>
@@ -51,8 +52,10 @@
             <td>
                <button id="btn-article-sup" type="button" class="badge text-white bg-danger" title="Supprimer" data-toggle="modal" data-target="#supprimer" data-id="{{ article.pk }}" data-article-name="{{ article.name }}">
                SUPPRIMER </button>
+               <a href="{% url 'edit-article' article_id=article.pk %}" class="badge text-dark bg-warning" title="Modifier">MODIFIER</a>
             </td>
          </tr>
+         {% endif %}
          {% endfor %}
          {% else %}
          <tr>

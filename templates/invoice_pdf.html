@@ -130,8 +130,8 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-right">
-                    <address>
-                        <strong>Mobile House</strong><br>
+                    <address style="color: #6a1b9a;">
+                        <strong>MOBILE HOUSE</strong><br>
                         Totsi à côté du Lycée Protestant<br>
                         Lomé, Togo<br>
                         +228 70 14 69 79
@@ -145,14 +145,14 @@
             <div class="row">
                 <div class="col-md-8">
                     <address>
-                        <strong>Nom du client :</strong> {{obj.customer.name}}<br>
-                        <strong>Adresse du client :</strong> {{obj.customer.address}}, {{obj.customer.city}}, Togo
+                        <strong>NOM DU CLIENT :</strong> {{obj.customer.name}}<br>
+                        <strong>ADRESSE DU CLIENT :</strong> {{obj.customer.address}}, {{obj.customer.city}} Togo
                     </address>
                 </div>
                 <div class="col-md-4 text-right">
                     <div class="invoice-num">
-                        <strong>Numero de la facture :</strong> {{obj.get_invoice_type_display}} - #00{{obj.id}}<br>
-                        <strong>Date :</strong> {{obj.invoice_date_time}}
+                        <strong>NUMERO DE LA FACTURE :</strong> {{obj.get_invoice_type_display}} - 000{{obj.id}}<br>
+                        <strong>DATE :</strong> {{obj.invoice_date_time}}
                     </div>
                 </div>
             </div>
@@ -163,10 +163,10 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Articles</th>
-                        <th>Quantites</th>
-                        <th>Prix Unitaire</th>
-                        <th>Total</th>
+                        <th>ARTICLES</th>
+                        <th>QUANTITES</th>
+                        <th>PRIX UNITAIRE</th>
+                        <th>TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -180,9 +180,9 @@
                   {% endfor %}
                     <tr>
                         <td colspan="2">
-                            <strong>Commentaires:</strong> {{obj.comments}}
+                            <strong>COMMENTAIRES : </strong> {{obj.comments}}
                         </td>
-                        <td><strong>Total</strong></td>
+                        <td><strong>TOTAL</strong></td>
                         <td><strong>{{obj.total}} FCFA</strong></td>
                     </tr>
                     <tr>
@@ -201,7 +201,7 @@
 
         <!-- Footer -->
         <div class="invoice-footer">
-            <strong>Mobile House! Le Meilleur Sinon Rien, Votre Satisfaction est notre preocupation.</strong>
+            <strong style="color: #6a1b9a;">Mobile House! Le Meilleur Sinon Rien, Votre Satisfaction est notre preocupation.</strong>
         </div>
     </div>
 </body>

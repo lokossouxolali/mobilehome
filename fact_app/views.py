@@ -7,11 +7,14 @@ import pdfkit
 from django.template.loader import get_template
 from .utils import pagination, get_invoice
 import datetime
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .decorators import *
-from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from decimal import Decimal
+from django.contrib.auth.models import User
+from django import forms
 
 
 # Create your views here.
@@ -92,18 +95,12 @@ class AddCustomerView(LoginRequiredSuperuserMixin, View):
             return render(request, self.template_name)
 
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.db import transaction
-from .models import Invoice, Customer, Article, InvoiceItem
-from decimal import Decimal
-
-class AddInvoiceView(LoginRequiredSuperuserMixin, View):
+class AddInvoiceView(LoginRequiredMixin, View):
     template_name = "add_invoice.html"
 
     def get(self, request, *args, **kwargs):
         customers = Customer.objects.all()
-        articles = Article.objects.all()
+        articles = Article.objects.filter(is_active=True)
         context = {
             'customers': customers,
             'articles': articles
@@ -120,30 +117,37 @@ class AddInvoiceView(LoginRequiredSuperuserMixin, View):
             unit_prices = request.POST.getlist('unit')
             comments = request.POST.get('comment')
 
-            # Récupérer l'objet Customer
             customer = Customer.objects.get(id=customer_id)
 
-            # Création de l'objet facture
-            invoice_object = {
-                'customer': customer,  # Utiliser l'objet Customer, pas l'ID
-                'save_by': request.user,
-                'invoice_type': invoice_type,
-                'comments': comments
-            }
-            invoice = Invoice.objects.create(**invoice_object)
+            errors = []  # Liste pour stocker les erreurs
 
-            # Création des InvoiceItems et mise à jour du stock d'articles
+            # Vérification du stock AVANT de créer la facture
+            for article_id, qty in zip(article_ids, quantities):
+                article = Article.objects.get(id=article_id)
+                qty = Decimal(qty)
+
+                if article.stock < qty:
+                    errors.append(f"Stock insuffisant pour l'article {article.name}. Stock disponible : {article.stock}.")
+
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+                return redirect('add-invoice')  # Redirection et arrêt du code si erreur
+
+            # Si pas d'erreur, création de la facture
+            invoice = Invoice.objects.create(
+                customer=customer,
+                save_by=request.user,
+                invoice_type=invoice_type,
+                comments=comments
+            )
+
+            # Création des InvoiceItems et mise à jour du stock
             for article_id, qty, unit_price in zip(article_ids, quantities, unit_prices):
                 article = Article.objects.get(id=article_id)
                 qty = Decimal(qty)
                 unit_price = Decimal(unit_price)
 
-                # Vérifiez si le stock est suffisant
-                if article.stock < qty:
-                    messages.error(request, f"Stock insuffisant pour l'article {article.name}. Stock disponible : {article.stock}.")
-                    return render(request, self.template_name)
-
-                # Créer l'InvoiceItem
                 InvoiceItem.objects.create(
                     invoice=invoice,
                     article=article,
@@ -151,17 +155,16 @@ class AddInvoiceView(LoginRequiredSuperuserMixin, View):
                     unit_price=unit_price
                 )
 
-                # Décrémentez le stock de l'article
+                # Décrémenter le stock
                 article.stock -= qty
-                article.save()  # Enregistrez les modifications
+                article.save()
 
             messages.success(request, "Facture créée avec succès.")
             return redirect('home')
 
         except Exception as e:
             messages.error(request, f"Désolé, une erreur s'est produite : {e}.")
-
-        return render(request, self.template_name)
+            return render(request, self.template_name)
 
 class InvoiceVisualizationView(LoginRequiredSuperuserMixin, View):
     template_name = 'invoice.html'
@@ -200,13 +203,6 @@ def get_invoice_pdf(request, *args, **kwargs):
         except Exception as e:
             return HttpResponse(f"Erreur lors de la génération du PDF : {e}", status=500)
         
-
-# views.py
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django import forms
 
 # Formulaire personnalisé pour créer un administrateur
 class AdminCreationForm(forms.ModelForm):
@@ -267,7 +263,7 @@ def add_article(request):
     return render(request, "add_article.html")
 
 def article_list(request):
-    articles = Article.objects.all()  # Récupérer tous les produits
+    articles = Article.objects.filter(is_active=True)  # Récupérer tous les produits
 
     if request.method == 'POST' and 'id_supprimer' in request.POST:
         try:
@@ -276,7 +272,8 @@ def article_list(request):
             # Get the Article object
             article = Article.objects.get(pk=article_id)
             # Delete the Article object
-            article.delete()
+            article.is_active = False
+            article.save()
             messages.success(request, "L'article a été supprimé avec succès.")
         except Article.DoesNotExist:
             messages.error(request, "L'article n'existe pas.")
@@ -292,7 +289,7 @@ def customer_list(request):
 
 def sales_summary(request):
     sales_data = []
-    invoice_items = InvoiceItem.objects.all().order_by('invoice__invoice_date_time')
+    invoice_items = InvoiceItem.objects.all().order_by('-invoice__invoice_date_time')
 
     for item in invoice_items:
         sales_data.append({
@@ -308,3 +305,39 @@ def sales_summary(request):
         'sales_data': sales_data
     }
     return render(request, 'sales_summary_list.html', context)
+
+
+def edit_article(request, article_id):
+    article = get_object_or_404(Article, pk=article_id)
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        stock = request.POST.get('stock')
+
+        # Validation manuelle
+        errors = {}
+        if not name:
+            errors['name'] = "Le nom de l'article est obligatoire."
+        if not stock:
+            errors['stock'] = "Le stock est obligatoire."
+        try:
+            stock = int(stock)
+            if stock < 0:
+                errors['stock'] = "Le stock doit être un nombre positif."
+        except ValueError:
+            errors['stock'] = "Le stock doit être un nombre entier."
+
+        if errors:
+            context = {'article': article, 'errors': errors, 'name': name, 'stock': stock}
+            return render(request, 'edit_article.html', context)
+
+        # Si la validation réussit, enregistrez les modifications
+        article.name = name
+        article.stock = stock
+        article.save()
+        messages.success(request, "L'article a été modifié avec succès.")
+        return redirect('article-list')  # Redirige vers la liste des articles
+    else:
+        # Affiche le formulaire pré-rempli
+        context = {'article': article, 'name': article.name, 'stock': article.stock}
+        return render(request, 'edit_article.html', context)

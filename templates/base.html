@@ -16,13 +16,15 @@
 
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'home' %}">MOBILE-HOUSE</a>
+        <a class="navbar-brand" href="{% url 'home' %}">
+          <img src="{% static 'images/mobilehouseacceuil.svg' %}" alt="MOBILE HOUSE" height="40" width="400">
+        </a>
         <div class="d-flex justify-content-around w-100">
-          <a href="{% url 'home' %}" class="btn btn-primary">Accueil</a>
-          <a href="{% url 'article-list' %}" class="btn btn-primary">Liste des articles</a>
-          <a href="{% url 'sales-summary-list' %}" class="btn btn-primary">Liste des ventes</a>
-          <a href="{% url 'customer-list' %}" class="btn btn-primary">Liste des clients</a>
-          <a href="{% url 'add-admin' %}" class="btn btn-primary">Ajouter un administrateur</a>
+          <a href="{% url 'home' %}" class="btn btn-primary">ACCEUIL</a>
+          <a href="{% url 'article-list' %}" class="btn btn-primary">ARTICLES</a>
+          <a href="{% url 'sales-summary-list' %}" class="btn btn-primary">VENTES</a>
+          <a href="{% url 'customer-list' %}" class="btn btn-primary">CLIENTS</a>
+          <a href="{% url 'add-admin' %}" class="btn btn-primary">ADMINISTRATEURS</a>
         </div>
       </nav>
     </header>

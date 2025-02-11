@@ -36,7 +36,6 @@
                 <td>{{ admin.username }}</td>
                 <td>{{ admin.email }}</td>
                 <td>
-                    <!--<a href="{% url 'edit-admin' admin.id %}" class="badge text-white bg-warning" title="Modifier">MODIFIER</a>-->
                     <button id="btn-admin-delete" type="button" data-toggle="modal" data-target="#deleteAdminModal"
                         class="badge text-white bg-danger" title="Supprimer" data-id="{{ admin.id }}"
                         data-username="{{ admin.username }}">SUPPRIMER</button>
