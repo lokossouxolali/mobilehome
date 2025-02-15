@@ -1,3 +1,4 @@
+from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.views import View
 from .models import *
@@ -158,6 +159,18 @@ class AddInvoiceView(LoginRequiredMixin, View):
                 # Décrémenter le stock
                 article.stock -= qty
                 article.save()
+
+                #envoi d'émail
+                print("envoi d'email")
+            send_mail(
+               subject="Nouvelle vente effectuée",
+               message=f"Une nouvelle facture a été générée par {request.user.username} pour l'article {article.name}. "
+                       f"Date : {invoice.invoice_date_time} avec une quantité de {qty} au prix de: {unit_price} l'unité.",
+               from_email=request.user.email,
+               recipient_list=["guaellokossou3@gmail.com","urbainbalogou19@gmail.com"],
+               fail_silently=False,
+            )
+            print("email envoyé")
 
             messages.success(request, "Facture créée avec succès.")
             return redirect('home')
