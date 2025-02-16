@@ -1,4 +1,6 @@
 from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+from django.utils.html import strip_tags
 from django.shortcuts import redirect, render
 from django.views import View
 from .models import *
@@ -96,6 +98,12 @@ class AddCustomerView(LoginRequiredSuperuserMixin, View):
             return render(request, self.template_name)
 
 
+from django.core.mail import EmailMessage
+from django.utils.html import strip_tags
+
+from django.core.mail import EmailMessage
+from django.utils.html import strip_tags
+
 class AddInvoiceView(LoginRequiredMixin, View):
     template_name = "add_invoice.html"
 
@@ -143,6 +151,8 @@ class AddInvoiceView(LoginRequiredMixin, View):
                 comments=comments
             )
 
+            invoice_items_details = [] #Creation d'une liste pour stocker les details de chaque article
+            total_amount = 0 #initialisation du montant total
             # Création des InvoiceItems et mise à jour du stock
             for article_id, qty, unit_price in zip(article_ids, quantities, unit_prices):
                 article = Article.objects.get(id=article_id)
@@ -155,21 +165,122 @@ class AddInvoiceView(LoginRequiredMixin, View):
                     quantity=qty,
                     unit_price=unit_price
                 )
+                item_total = qty * unit_price #calcul du total pour chaque article
+                total_amount += item_total #ajout du total de l'article au montant total
+                invoice_items_details.append(f"""
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{article.name}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{qty}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{unit_price}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{item_total}</td>
+                    </tr>
+                """) #Ajout des details de chaque article dans la liste
 
-                # Décrémenter le stock
-                article.stock -= qty
-                article.save()
+            #envoi d'émail
+            print("envoi d'email")
 
-                #envoi d'émail
-                print("envoi d'email")
-            send_mail(
-               subject="Nouvelle vente effectuée",
-               message=f"Une nouvelle facture a été générée par {request.user.username} pour l'article {article.name}. "
-                       f"Date : {invoice.invoice_date_time} avec une quantité de {qty} au prix de: {unit_price} l'unité.",
-               from_email=request.user.email,
-               recipient_list=["guaellokossou3@gmail.com","urbainbalogou19@gmail.com"],
-               fail_silently=False,
+             # Construction du tableau HTML pour les détails des articles
+            article_table = f"""
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #663399; color: white;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">ARTICLE</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">QUANTITÉ</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">PRIX UNITAIRE</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {''.join(invoice_items_details)}
+                    </tbody>
+                </table>
+            """
+            # Construction du corps du message HTML
+            html_message = f"""
+                <html>
+                <head>
+                    <style>
+                        /* Ajoutez du CSS pour embellir l'e-mail si vous le souhaitez */
+                        body {{ font-family: Arial, sans-serif; }}
+                        .header {{
+                            background-color: #663399;
+                            color: white;
+                            padding: 10px;
+                            text-align: center; /* Centrer le texte */
+                        }}
+                        .content {{ padding: 10px; }}
+                        .button {{
+                            background-color: #4CAF50; /* Green */
+                            border: none;
+                            color: white;
+                            padding: 10px 20px;
+                            text-align: center;
+                            text-decoration: none;
+                            display: inline-block;
+                            font-size: 16px;
+                            margin: 4px 2px;
+                            cursor: pointer;
+                            border-radius: 5px;
+                        }}
+                        .footer {{
+                            text-align: center; /* Centrer les boutons */
+                            padding: 20px;
+                        }}
+                        .total-date {{
+                            color: #6A0DAD;
+                            font-size: 18px;
+                            font-weight: bold;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2><span style="font-weight: bold; text-transform: uppercase;"> 📢 NOUVELLE FACTURE ENREGISTRÉE !</span></h2>
+                    </div>
+                    <div class="content">
+                        <p>📢 Une nouvelle facture a été générée par <strong>{request.user.username}</strong> pour le client <strong>{customer.name}</strong>.</p>
+                        <h3>Détails de la Facture :</h3>
+                        {article_table}
+
+                        <div class="total-date">
+                            <p><strong>Montant Total :</strong> {total_amount}</p>
+                            <p><strong>Date :</strong> {invoice.invoice_date_time}</p>
+                        </div>
+
+                        <!-- Bouton d'action -->
+                        <div style="text-align: center; padding: 20px;  height: 100px;">
+                            <a href="http://127.0.0.1:8000/view_invoice/{invoice.id}" 
+                            style="background-color: #27ae60; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin: 5px;">
+                                📝 Voir la Facture
+                            </a>
+                            <a href="http://127.0.0.1:8000/sales_summary_list" 
+                            style="background-color: #27ae60; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin: 5px;">
+                                📝 Voir les ventes
+                            </a>
+                            <a href="http://127.0.0.1:8000/article_list" 
+                            style="background-color: #27ae60; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin: 5px;">
+                                📝 Voir les articles
+                            </a>
+                        </div>
+                    </div>
+                            <!-- Pied de page -->
+                <div style="background-color: #6A0DAD; padding: 10px; text-align: center; font-size: 12px; color: #fff;">
+                </body>
+                </html>
+            """
+
+            plain_message = strip_tags(html_message)  # Version texte brut pour les clients de messagerie qui ne supportent pas HTML
+
+            email = EmailMessage(
+                subject="Nouvelle vente effectuée",
+                body=html_message, #utilisation de html_message et non plain_message pour le corps de l'email
+                from_email=request.user.email,
+                to=["lxolalikokouguel@gmail.com","urbainbalogou19@gmail.com"],
             )
+            email.content_subtype = "html"  # Indique que le contenu est HTML
+            email.send()
+
+
             print("email envoyé")
 
             messages.success(request, "Facture créée avec succès.")
@@ -178,6 +289,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
         except Exception as e:
             messages.error(request, f"Désolé, une erreur s'est produite : {e}.")
             return render(request, self.template_name)
+
 
 class InvoiceVisualizationView(LoginRequiredSuperuserMixin, View):
     template_name = 'invoice.html'
