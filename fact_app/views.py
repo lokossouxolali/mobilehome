@@ -100,7 +100,7 @@ class AddCustomerView(LoginRequiredSuperuserMixin, View):
 
 from django.core.mail import EmailMessage
 from django.utils.html import strip_tags
-
+from django.templatetags.static import static
 from django.core.mail import EmailMessage
 from django.utils.html import strip_tags
 
@@ -141,6 +141,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
             if errors:
                 for error in errors:
                     messages.error(request, error)
+                    return redirect('add-invoice')
                 return redirect('add-invoice')  # Redirection et arrêt du code si erreur
 
             # Si pas d'erreur, création de la facture
@@ -159,6 +160,10 @@ class AddInvoiceView(LoginRequiredMixin, View):
                 qty = Decimal(qty)
                 unit_price = Decimal(unit_price)
 
+                # Mise à jour du stock
+                article.stock -= qty
+                article.save()
+
                 InvoiceItem.objects.create(
                     invoice=invoice,
                     article=article,
@@ -173,11 +178,9 @@ class AddInvoiceView(LoginRequiredMixin, View):
                         <td style="padding: 8px; border: 1px solid #ddd;">{qty}</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">{unit_price}</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">{item_total}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{article.stock}</td>
                     </tr>
                 """) #Ajout des details de chaque article dans la liste
-
-            #envoi d'émail
-            print("envoi d'email")
 
              # Construction du tableau HTML pour les détails des articles
             article_table = f"""
@@ -188,6 +191,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
                             <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">QUANTITÉ</th>
                             <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">PRIX UNITAIRE</th>
                             <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">TOTAL</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STOCK RESTANT</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -275,13 +279,123 @@ class AddInvoiceView(LoginRequiredMixin, View):
                 subject="Nouvelle vente effectuée",
                 body=html_message, #utilisation de html_message et non plain_message pour le corps de l'email
                 from_email=request.user.email,
-                to=["lxolalikokouguel@gmail.com","urbainbalogou19@gmail.com"],
+                to=["lxolalikokouguel@gmail.com"],
             )
             email.content_subtype = "html"  # Indique que le contenu est HTML
             email.send()
 
+            header_image_url = static("images/mobilehouseacceuil.svg")
 
-            print("email envoyé")
+            # Icônes des réseaux sociaux (remplace les liens avec ceux de tes réseaux)
+            social_media_icons = """
+            <div style="text-align: center; padding: 10px;">
+                <a href="https://facebook.com/tonpage" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/174/174848.png" width="24" height="24">
+                </a>
+                <a href="https://instagram.com/tonpage" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/2111/2111463.png" width="24" height="24">
+                </a>
+                <a href="https://twitter.com/tonpage" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" width="24" height="24">
+                </a>
+                <a href="https://linkedin.com/tonpage" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" width="24" height="24">
+                </a>
+                <a href="https://www.tiktok.com/@tonpage" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/3046/3046125.png" width="24" height="24">
+                </a>
+                <a href="https://wa.me/+22896393780" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/733/733585.png" width="24" height="24">
+                </a>
+                <a href="https://www.youtube.com/c/tonpage" style="margin: 0 5px;">
+                    <img src="https://cdn-icons-png.flaticon.com/24/1384/1384060.png" width="24" height="24">
+                </a>
+            </div>
+            """
+
+            # Corps du message HTML
+            html_message = f"""
+            <html>
+            <head>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    body {{
+                        font-family: 'Arial', sans-serif;
+                        background-color: #1c1c1c; /* Noir clair ultra classe */
+                        color: #f1f1f1;
+                        text-align: center;
+                        padding: 40px;
+                    }}
+                    h1 {{
+                        color: #6A0DAD;
+                    }}
+                    p {{
+                        font-size: 16px;
+                        line-height: 1.6;
+                    }}
+                    .header {{
+                        text-align: center;
+                        background-color : #6A0DAD;
+                        padding: 20px;
+                    }}
+                    .content {{
+                        padding: 20px;
+                        text-align: center;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #27ae60;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        font-weight: bold;
+                        border-radius: 5px;
+                        margin-top: 20px;
+                    }}
+                    .footer {{
+                        text-align: center;
+                        background-color: #f1f1f1;
+                        padding: 20px;
+                        font-size: 12px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="{header_image_url}" width="100%" alt="En-tête">
+                </div>
+                    <h1>🛍️ Merci pour votre achat, {customer.name} !</h1>
+                    <p>Nous sommes ravis de vous compter parmi nos précieux clients. Votre confiance signifie tout pour nous !</p>
+                    <p>🌟 Chaque achat chez nous est une promesse de qualité et de satisfaction.</p>
+                    <p>Si vous avez la moindre question, nous sommes là pour vous.</p>
+
+                {social_media_icons}
+
+                <div class="footer">
+                    <p>Besoin d'aide ? <a href="mailto:lxolalikokouguel@gmail.com">Contactez-nous</a></p>
+                    <p>© 2025 Mobile House. Tous droits réservés.</p>
+                </div>
+            </body>
+            </html>
+            """
+
+            # Version texte brut (au cas où l'email HTML ne s'affiche pas)
+            plain_message = strip_tags(html_message)
+
+            # Envoi de l'email
+            email = EmailMessage(
+                subject="Merci pour votre achat !",
+                body=html_message,
+                from_email="lxolalikokouguel@gmail.com",
+                to=[customer.email],
+            )
+            email.content_subtype = "html"  # Indique que l'email est au format HTML
+            email.send()
+
 
             messages.success(request, "Facture créée avec succès.")
             return redirect('home')

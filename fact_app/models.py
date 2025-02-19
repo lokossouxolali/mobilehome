@@ -53,6 +53,10 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"{self.customer.name}_{self.invoice_date_time}"
+    
+    @property
+    def total_amount(self):
+        return sum(item.total_price for item in self.invoice_items.all())
     @property
     def total(self):
         total_amount = 0
@@ -73,6 +77,10 @@ class Article(models.Model):
 
     def __str__(self):
         return f"{self.name} (Stock: {self.stock})"
+    
+    @property
+    def total_sold(self):
+        return sum(item.quantity for item in self.invoiceitem_set.all())  # Récupère toutes les ventes liées à l'article et somme les quantités vendues
     
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.SET_NULL, related_name="invoice_items")

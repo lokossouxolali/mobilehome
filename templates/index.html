@@ -57,7 +57,7 @@
             <th scope="row">{{ facture.pk }}</th>
             <td>{{facture.customer.name}}</td>
             <td>{{facture.invoice_date_time}}</td>
-            <td>{{ facture.get_total }}</td>
+            <td>{{ facture.total_amount }}</td>
             <td>
                {% if facture.paid %}
                <img src="{% static 'images/icon-yes.svg' %}" alt="True">

@@ -37,7 +37,8 @@
             <th scope="col">NOM DU PRODUIT</th>
             <th scope="col">STOCK</th>
             <th scope="col">DATE D'AJOUT</th>
-            <th scope="col">ACTION</th>
+            <th scope="col">STOCK VENDU</th>
+            <th scope="col">ACTION</th>  
          </tr>
       </thead>
       <tbody id="myTable">
@@ -49,6 +50,7 @@
             <td>{{ article.name }}</td>
             <td>{{ article.stock }}</td>
             <td>{{ article.created_at }}</td>
+            <td>{{ article.total_sold }}</td>
             <td>
                <button id="btn-article-sup" type="button" class="badge text-white bg-danger" title="Supprimer" data-toggle="modal" data-target="#supprimer" data-id="{{ article.pk }}" data-article-name="{{ article.name }}">
                SUPPRIMER </button>

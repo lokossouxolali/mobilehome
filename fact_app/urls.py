@@ -14,4 +14,4 @@ urlpatterns = [
     path('invoice_pdf/<int:pk>', views.get_invoice_pdf, name="invoice-pdf"),
     path('admin_add', views.add_admin, name='add-admin'),
     path('admin_list', views.admin_list, name ='admin-list'),
-]
+] 
