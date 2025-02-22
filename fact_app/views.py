@@ -513,6 +513,64 @@ def article_list(request):
             # Delete the Article object
             article.is_active = False
             article.save()
+
+                    # Construire l'e-mail HTML
+            article_table = f"""
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #d9534f; color: white;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">ARTICLE SUPPRIMÉ</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STOCK AVANT SUPPRESSION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{article.name}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{article.stock}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            """
+
+            html_message = f"""
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; }}
+                        .header {{
+                            background-color: #d9534f;
+                            color: white;
+                            padding: 10px;
+                            text-align: center;
+                        }}
+                        .content {{ padding: 10px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>🚨 ARTICLE SUPPRIMÉ</h2>
+                    </div>
+                    <div class="content">
+                        <p><strong>{request.user.username}</strong> a supprimé un article :</p>
+                        {article_table}
+                        <p>❌ Cet article a été désactivé dans le système.</p>
+                    </div>
+                </body>
+                </html>
+            """
+
+            plain_message = strip_tags(html_message)
+
+            # Envoi de l'e-mail
+            email = EmailMessage(
+                subject="Un article a été supprimé",
+                body=html_message,
+                from_email=request.user.email,
+                to=["lxolalikokouguel@gmail.com"],  # Remplace par l'email de l'administrateur
+            )
+            email.content_subtype = "html"
+            email.send()
+
             messages.success(request, "L'article a été supprimé avec succès.")
         except Article.DoesNotExist:
             messages.error(request, "L'article n'existe pas.")
@@ -548,6 +606,7 @@ def sales_summary(request):
 
 def edit_article(request, article_id):
     article = get_object_or_404(Article, pk=article_id)
+    old_stock = article.stock
 
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -574,6 +633,65 @@ def edit_article(request, article_id):
         article.name = name
         article.stock = stock
         article.save()
+
+                # Envoi d'un e-mail à l'administrateur
+        article_table = f"""
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #663399; color: white;">
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">ARTICLE</th>
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STOCK AVANT</th>
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STOCK APRÈS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{article.name}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{old_stock}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{stock}</td>
+                    </tr>
+                </tbody>
+            </table>
+        """
+
+        html_message = f"""
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; }}
+                    .header {{
+                        background-color: #663399;
+                        color: white;
+                        padding: 10px;
+                        text-align: center;
+                    }}
+                    .content {{ padding: 10px; }}
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>📢 MODIFICATION D'ARTICLE</h2>
+                </div>
+                <div class="content">
+                    <p><strong>{request.user.username}</strong> a modifié un article :</p>
+                    {article_table}
+                    <p>✅ Les modifications ont été appliquées avec succès.</p>
+                </div>
+            </body>
+            </html>
+        """
+
+        plain_message = strip_tags(html_message)  
+
+        email = EmailMessage(
+            subject="Article modifié",
+            body=html_message,
+            from_email=request.user.email,
+            to=["lxolalikokouguel@gmail.com"],
+        )
+        email.content_subtype = "html"
+        email.send()
+
         messages.success(request, "L'article a été modifié avec succès.")
         return redirect('article-list')  # Redirige vers la liste des articles
     else:
