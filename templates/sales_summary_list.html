@@ -77,47 +77,73 @@
 </div>
 
 <script>
-    $(document).ready(function () {
-        // Fonction de recherche par article, date et prix
-        $("#search_article, #search_date, #search_price, #search_period").on("keyup change", function () {
-            var articleValue = $("#search_article").val().toLowerCase();
-            var dateValue = $("#search_date").val();
-            var priceValue = $("#search_price").val();
-            var periodValue = $("#search_period").val();
+document.addEventListener("DOMContentLoaded", function () {
+    var searchArticle = document.getElementById("search_article");
+    var searchDate = document.getElementById("search_date");
+    var searchPrice = document.getElementById("search_price");
+    var searchPeriod = document.getElementById("search_period");
+    var tableBody = document.getElementById("myTable");
+    var tableRows = tableBody.querySelectorAll("tr");
 
-            $("#myTable tr").filter(function () {
-                var articleText = $(this).find(".article").text().toLowerCase();
-                var dateText = $(this).find(".date").text();
-                var priceText = $(this).find(".total_price").text();
-                var date = new Date($(this).find(".date").data("date"));
-                var now = new Date();
+    // Création d'un message "Aucune vente trouvée"
+    var noResultsRow = document.createElement("tr");
+    noResultsRow.innerHTML = `<td colspan="7" class="text-center text-danger">Aucune vente trouvée.</td>`;
+    noResultsRow.style.display = "none";
+    tableBody.appendChild(noResultsRow);
 
-                // Filtrage par période
-                var matchPeriod = true;
-                if (periodValue === "day") {
-                    matchPeriod = date.toDateString() === now.toDateString();
-                } else if (periodValue === "week") {
-                    var startOfWeek = now.getDate() - now.getDay();
-                    var endOfWeek = startOfWeek + 6;
-                    var weekStart = new Date(now.setDate(startOfWeek));
-                    var weekEnd = new Date(now.setDate(endOfWeek));
-                    matchPeriod = date >= weekStart && date <= weekEnd;
-                } else if (periodValue === "month") {
-                    matchPeriod = date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                } else if (periodValue === "year") {
-                    matchPeriod = date.getFullYear() === now.getFullYear();
-                }
+    function filterTable() {
+        var articleValue = searchArticle.value.toLowerCase().trim();
+        var dateValue = searchDate.value;
+        var priceValue = searchPrice.value.trim();
+        var periodValue = searchPeriod.value;
+        var now = new Date();
+        var visibleRows = 0;
 
-                // Filtrage par article et prix
-                var matchArticle = articleText.indexOf(articleValue) > -1;
-                var matchDate = dateValue ? dateText.indexOf(dateValue) > -1 : true;
-                var matchPrice = priceValue ? parseFloat(priceText) === parseFloat(priceValue) : true;
+        tableRows.forEach(function (row) {
+            var articleText = row.querySelector(".article")?.textContent.toLowerCase() || "";
+            var dateText = row.querySelector(".date")?.getAttribute("data-date") || "";
+            var priceText = row.querySelector(".unit_price")?.textContent.trim() || "";
+            var saleDate = new Date(dateText);
 
-                // Affichage ou masquage de la ligne en fonction des filtres
-                $(this).toggle(matchArticle && matchDate && matchPrice && matchPeriod);
-            });
+            var matchArticle = articleText.includes(articleValue);
+            var matchDate = dateValue ? dateText === dateValue : true;
+            var matchPrice = priceValue ? parseFloat(priceText) == parseFloat(priceValue) : true;
+            var matchPeriod = true;
+
+            if (periodValue === "day") {
+                matchPeriod = saleDate.toDateString() === now.toDateString();
+            } else if (periodValue === "week") {
+                var startOfWeek = new Date(now);
+                startOfWeek.setDate(now.getDate() - now.getDay());
+                var endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                matchPeriod = saleDate >= startOfWeek && saleDate <= endOfWeek;
+            } else if (periodValue === "month") {
+                matchPeriod = saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+            } else if (periodValue === "year") {
+                matchPeriod = saleDate.getFullYear() === now.getFullYear();
+            }
+
+            // Afficher ou masquer la ligne selon les filtres
+            if (matchArticle && matchDate && matchPrice && matchPeriod) {
+                row.style.display = "";
+                visibleRows++;
+            } else {
+                row.style.display = "none";
+            }
         });
-    });
+
+        // Affichage du message "Aucune vente trouvée" si aucun résultat
+        noResultsRow.style.display = visibleRows === 0 ? "" : "none";
+    }
+
+    // Écouteurs d'événements pour filtrer en temps réel
+    searchArticle.addEventListener("input", filterTable);
+    searchDate.addEventListener("change", filterTable);
+    searchPrice.addEventListener("input", filterTable);
+    searchPeriod.addEventListener("change", filterTable);
+});
+
 </script>
 
 {% endblock %}

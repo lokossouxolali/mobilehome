@@ -154,6 +154,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
 
             invoice_items_details = [] #Creation d'une liste pour stocker les details de chaque article
             total_amount = 0 #initialisation du montant total
+            domaine_name = request.build_absolute_uri('http://127.0.0.1:8000') #recuperation du nom de domaine
             # Création des InvoiceItems et mise à jour du stock
             for article_id, qty, unit_price in zip(article_ids, quantities, unit_prices):
                 article = Article.objects.get(id=article_id)
@@ -253,15 +254,15 @@ class AddInvoiceView(LoginRequiredMixin, View):
 
                         <!-- Bouton d'action -->
                         <div style="text-align: center; padding: 20px;  height: 100px;">
-                            <a href="http://127.0.0.1:8000/view_invoice/{invoice.id}" 
+                            <a href="{domaine_name}/view_invoice/{invoice.id}" 
                             style="background-color: #27ae60; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin: 5px;">
                                 📝 Voir la Facture
                             </a>
-                            <a href="http://127.0.0.1:8000/sales_summary_list" 
+                            <a href="{domaine_name}/sales_summary_list" 
                             style="background-color: #27ae60; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin: 5px;">
                                 📝 Voir les ventes
                             </a>
-                            <a href="http://127.0.0.1:8000/article_list" 
+                            <a href="{domaine_name}/article_list" 
                             style="background-color: #27ae60; color: #fff; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin: 5px;">
                                 📝 Voir les articles
                             </a>
