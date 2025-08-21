@@ -18,24 +18,82 @@
 <br><br>
 
 <!-- Filtres de recherche -->
-<div class="form-row">
-    <div class="col-md-3">
-        <input id="search_article" class="form-control" type="text" placeholder="Rechercher par article">
+<div class="filters-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <!-- Filtres à gauche -->
+    <div class="left-filters" style="display: flex; gap: 8px; align-items: center;">
+        <div class="filter-dropdown" style="position: relative;">
+            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 120px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <span>Tous les employés</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </button>
+            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 120px;">
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Tous les employés</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Employé 1</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Employé 2</a></li>
+            </ul>
+        </div>
+        
+        <div class="filter-dropdown" style="position: relative;">
+            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 80px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <span>Statut</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </button>
+            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 100px;">
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Tous les statuts</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">En cours</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Terminé</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Annulé</a></li>
+            </ul>
+        </div>
+        
+        <div class="filter-dropdown" style="position: relative;">
+            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 80px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <span>Mensuel</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </button>
+            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 120px;">
+                <li><a class="dropdown-item" href="#" data-period="day" style="padding: 8px 12px; font-size: 14px;">Aujourd'hui</a></li>
+                <li><a class="dropdown-item" href="#" data-period="week" style="padding: 8px 12px; font-size: 14px;">Cette semaine</a></li>
+                <li><a class="dropdown-item" href="#" data-period="month" style="padding: 8px 12px; font-size: 14px;">Ce mois-ci</a></li>
+                <li><a class="dropdown-item" href="#" data-period="year" style="padding: 8px 12px; font-size: 14px;">Cette année</a></li>
+            </ul>
+        </div>
+        
+        <button class="filter-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; justify-content: center; width: 40px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+            </svg>
+        </button>
     </div>
-    <div class="col-md-3">
-        <input id="search_date" class="form-control" type="date">
-    </div>
-    <div class="col-md-3">
-        <input id="search_price" class="form-control" type="number" step="0.01" placeholder="Rechercher par prix">
-    </div>
-    <div class="col-md-3">
-        <select id="search_period" class="form-control">
-            <option value="">Sélectionner période</option>
-            <option value="day">Aujourd'hui</option>
-            <option value="week">Cette semaine</option>
-            <option value="month">Ce mois-ci</option>
-            <option value="year">Cette année</option>
-        </select>
+    
+    <!-- Recherche et export à droite -->
+    <div class="right-actions" style="display: flex; gap: 8px; align-items: center;">
+        <div class="search-container" style="position: relative;">
+            <input id="search_article" type="text" placeholder="Rechercher..." style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px 8px 35px; color: #495057; font-size: 14px; width: 200px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #6c757d;" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+        </div>
+        
+        <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+            Exporter PDF
+        </button>
+        
+        <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z"/>
+            </svg>
+            Exporter Excel
+        </button>
     </div>
 </div>
 
@@ -79,11 +137,13 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     var searchArticle = document.getElementById("search_article");
-    var searchDate = document.getElementById("search_date");
-    var searchPrice = document.getElementById("search_price");
-    var searchPeriod = document.getElementById("search_period");
     var tableBody = document.getElementById("myTable");
     var tableRows = tableBody.querySelectorAll("tr");
+    
+    // Variables pour les filtres
+    var currentPeriod = "";
+    var currentStaff = "";
+    var currentStatus = "";
 
     // Création d'un message "Aucune vente trouvée"
     var noResultsRow = document.createElement("tr");
@@ -93,39 +153,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function filterTable() {
         var articleValue = searchArticle.value.toLowerCase().trim();
-        var dateValue = searchDate.value;
-        var priceValue = searchPrice.value.trim();
-        var periodValue = searchPeriod.value;
         var now = new Date();
         var visibleRows = 0;
 
         tableRows.forEach(function (row) {
             var articleText = row.querySelector(".article")?.textContent.toLowerCase() || "";
             var dateText = row.querySelector(".date")?.getAttribute("data-date") || "";
-            var priceText = row.querySelector(".unit_price")?.textContent.trim() || "";
             var saleDate = new Date(dateText);
 
             var matchArticle = articleText.includes(articleValue);
-            var matchDate = dateValue ? dateText === dateValue : true;
-            var matchPrice = priceValue ? parseFloat(priceText) == parseFloat(priceValue) : true;
             var matchPeriod = true;
+            var matchStaff = true; // À implémenter selon vos besoins
+            var matchStatus = true; // À implémenter selon vos besoins
 
-            if (periodValue === "day") {
+            // Filtre par période
+            if (currentPeriod === "day") {
                 matchPeriod = saleDate.toDateString() === now.toDateString();
-            } else if (periodValue === "week") {
+            } else if (currentPeriod === "week") {
                 var startOfWeek = new Date(now);
                 startOfWeek.setDate(now.getDate() - now.getDay());
                 var endOfWeek = new Date(startOfWeek);
                 endOfWeek.setDate(startOfWeek.getDate() + 6);
                 matchPeriod = saleDate >= startOfWeek && saleDate <= endOfWeek;
-            } else if (periodValue === "month") {
+            } else if (currentPeriod === "month") {
                 matchPeriod = saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
-            } else if (periodValue === "year") {
+            } else if (currentPeriod === "year") {
                 matchPeriod = saleDate.getFullYear() === now.getFullYear();
             }
 
             // Afficher ou masquer la ligne selon les filtres
-            if (matchArticle && matchDate && matchPrice && matchPeriod) {
+            if (matchArticle && matchPeriod && matchStaff && matchStatus) {
                 row.style.display = "";
                 visibleRows++;
             } else {
@@ -137,13 +194,38 @@ document.addEventListener("DOMContentLoaded", function () {
         noResultsRow.style.display = visibleRows === 0 ? "" : "none";
     }
 
-    // Écouteurs d'événements pour filtrer en temps réel
-    searchArticle.addEventListener("input", filterTable);
-    searchDate.addEventListener("change", filterTable);
-    searchPrice.addEventListener("input", filterTable);
-    searchPeriod.addEventListener("change", filterTable);
-});
+    // Gestion des filtres de période
+    document.querySelectorAll('[data-period]').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentPeriod = this.getAttribute('data-period');
+            
+            // Mettre à jour le texte du bouton
+            var periodButton = document.querySelector('.filter-btn:contains("Mensuel")');
+            if (periodButton) {
+                periodButton.textContent = this.textContent;
+            }
+            
+            filterTable();
+        });
+    });
 
+    // Écouteur d'événement pour la recherche
+    searchArticle.addEventListener("input", filterTable);
+    
+    // Gestion des boutons d'export
+    document.querySelectorAll('.export-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (this.textContent.includes('PDF')) {
+                // Logique d'export PDF
+                alert('Export PDF en cours...');
+            } else if (this.textContent.includes('Excel')) {
+                // Logique d'export Excel
+                alert('Export Excel en cours...');
+            }
+        });
+    });
+});
 </script>
 
 {% endblock %}

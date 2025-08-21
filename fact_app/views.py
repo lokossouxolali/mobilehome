@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.views import View
 from .models import *
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, models
 import pdfkit
 from django.template.loader import get_template
 from .utils import pagination, get_invoice
@@ -24,14 +24,31 @@ from django import forms
 class HomeView(LoginRequiredSuperuserMixin, View):
     templates_name = 'index.html'
     invoices = Invoice.objects.select_related('customer', 'save_by').all().order_by('-invoice_date_time')
-    context = {
-        'invoices': invoices
-    }
     
     def get(self, request, *args, **kwargs):
+        # Calculer les statistiques
+        total_invoices = Invoice.objects.count()
+        total_customers = Customer.objects.count()
+        total_articles = Article.objects.count()
+        
+        # Calculer le revenu total en utilisant les InvoiceItems
+        total_revenue = InvoiceItem.objects.filter(
+            invoice__paid=True
+        ).aggregate(
+            total=models.Sum(models.F('quantity') * models.F('unit_price'))
+        )['total'] or 0
+        
         items = pagination(request, self.invoices)
-        self.context['invoices'] = items
-        return render(request, self.templates_name, self.context)
+        
+        context = {
+            'invoices': items,
+            'total_invoices': total_invoices,
+            'total_customers': total_customers,
+            'total_articles': total_articles,
+            'total_revenue': total_revenue,
+        }
+        
+        return render(request, self.templates_name, context)
     
     def post(self, request, *args, **kwargs):
 
@@ -65,9 +82,29 @@ class HomeView(LoginRequiredSuperuserMixin, View):
             except Exception as e:
                 messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
 
+        # Recalculer les statistiques après modification
+        total_invoices = Invoice.objects.count()
+        total_customers = Customer.objects.count()
+        total_articles = Article.objects.count()
+        
+        # Calculer le revenu total en utilisant les InvoiceItems
+        total_revenue = InvoiceItem.objects.filter(
+            invoice__paid=True
+        ).aggregate(
+            total=models.Sum(models.F('quantity') * models.F('unit_price'))
+        )['total'] or 0
+        
         items = pagination(request, self.invoices)
-        self.context['invoices'] = items
-        return render(request, self.templates_name, self.context)
+        
+        context = {
+            'invoices': items,
+            'total_invoices': total_invoices,
+            'total_customers': total_customers,
+            'total_articles': total_articles,
+            'total_revenue': total_revenue,
+        }
+        
+        return render(request, self.templates_name, context)
     
 
 class AddCustomerView(LoginRequiredSuperuserMixin, View):
@@ -280,7 +317,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
                 subject="Nouvelle vente effectuée",
                 body=html_message, #utilisation de html_message et non plain_message pour le corps de l'email
                 from_email=request.user.email,
-                to=["lxolalikokouguel@gmail.com"],
+                to=["lokossouxolali@gmail.com"],
             )
             email.content_subtype = "html"  # Indique que le contenu est HTML
             email.send()
@@ -377,7 +414,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
                 {social_media_icons}
 
                 <div class="footer">
-                    <p>Besoin d'aide ? <a href="mailto:lxolalikokouguel@gmail.com">Contactez-nous</a></p>
+                    <p>Besoin d'aide ? <a href="mailto:lokossouxolali@gmail.com">Contactez-nous</a></p>
                     <p>© 2025 Mobile House. Tous droits réservés.</p>
                 </div>
             </body>
@@ -391,7 +428,7 @@ class AddInvoiceView(LoginRequiredMixin, View):
             email = EmailMessage(
                 subject="Merci pour votre achat !",
                 body=html_message,
-                from_email="lxolalikokouguel@gmail.com",
+                from_email="lokossouxolali@gmail.com",
                 to=[customer.email],
             )
             email.content_subtype = "html"  # Indique que l'email est au format HTML
@@ -567,7 +604,7 @@ def article_list(request):
                 subject="Un article a été supprimé",
                 body=html_message,
                 from_email=request.user.email,
-                to=["lxolalikokouguel@gmail.com"],  # Remplace par l'email de l'administrateur
+                to=["lokossouxolali@gmail.com"],  # Remplace par l'email de l'administrateur
             )
             email.content_subtype = "html"
             email.send()
@@ -688,7 +725,7 @@ def edit_article(request, article_id):
             subject="Article modifié",
             body=html_message,
             from_email=request.user.email,
-            to=["lxolalikokouguel@gmail.com"],
+            to=["lokossouxolali@gmail.com"],
         )
         email.content_subtype = "html"
         email.send()
