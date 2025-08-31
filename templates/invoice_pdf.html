@@ -1,216 +1,286 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    
-    <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
-    <title>Facture</title>
+    <title>Facture Mobile House</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            font: 400 1rem 'Open Sans', sans-serif;
-            background: #f9f9f9;
-            color: #333;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            color: #1e293b;
+            line-height: 1.6;
+            font-size: 14px;
         }
 
         .invoice-container {
-            margin: 2rem auto;
-            padding: 2rem;
-            max-width: 900px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border: 1px solid #e9ecef;
         }
 
+        /* Header */
         .invoice-header {
-            border-bottom: 3px solid #6a1b9a;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
+            margin-bottom: 40px;
+        }
+
+        .custom-actions-btns {
+            margin-bottom: 30px;
+            text-align: right;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-left: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
         }
 
         .invoice-logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #6a1b9a;
+            font-size: 24px;
+            font-weight: 700;
+            color: #6366f1;
+            text-decoration: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        address {
+            font-style: normal;
+            line-height: 1.6;
+            color: #64748b;
         }
 
         .invoice-details {
-            margin-bottom: 1.5rem;
+            margin-bottom: 30px;
         }
 
-        .invoice-details address,
         .invoice-num {
-            font-size: 1rem;
-            line-height: 1.6;
+            text-align: right;
+            font-weight: 600;
+            color: #1e293b;
         }
 
+        .invoice-num div:first-child {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        /* Body */
         .invoice-body {
-            margin-bottom: 1.5rem;
+            margin-bottom: 40px;
         }
 
-        .table {
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .custom-table {
             width: 100%;
-            margin-bottom: 1rem;
-            color: #333;
             border-collapse: collapse;
+            margin: 0;
         }
 
-        .table thead {
-            background: #6a1b9a;
+        .custom-table th {
+            background: #6366f1;
             color: white;
-            font-weight: bold;
-        }
-
-        .table tbody tr:nth-child(even) {
-            background: #f3f3f3;
-        }
-
-        .table tbody tr:hover {
-            background: #ececec;
-        }
-
-        .table td,
-        .table th {
-            padding: 0.75rem;
+            padding: 12px 8px;
             text-align: left;
-            border: 1px solid #ddd;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
         }
 
-        .invoice-footer {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 1rem;
-            color: #555;
+        .custom-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        .custom-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
         }
 
         .text-success {
-            color: #28a745 !important;
-            font-weight: bold;
+            color: #10b981;
         }
 
-        .text-danger {
-            color: #dc3545 !important;
-            font-weight: bold;
+        .icon {
+            width: 20px;
+            height: 20px;
         }
 
-        h5 {
-            font-weight: bold;
-            margin-bottom: 1rem;
+        /* Footer */
+        .invoice-footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            font-size: 16px;
+            font-weight: 500;
+            color: #64748b;
         }
 
-        strong {
-            font-weight: bold;
-        }
-        .span-taille{
-            color: #6a1b9a;
-            height: 120px;
+        /* Print optimizations */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .invoice-container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .custom-actions-btns {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="invoice-container">
-        <!-- Header Section -->
+        <!-- Header -->
         <div class="invoice-header">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="invoice-logo">
-                        <div style="margin-bottom: -35px;">
-                            <span style="font-size: 160px;">m</span>
-                            <span style="font-size: 120px;">H</span>
-                        </div>
-                        <div>
-                            <span style="padding-top: 0px; padding-left: 10px;">mobile</span>
-                            <span style="padding-top: 0px; padding-left: 35px;">House</span>
-                        </div>
-                    </div>
+            <!-- Company and address -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <div>
+                    <a href="#" class="invoice-logo">
+                        MOBILE HOUSE
+                    </a>
                 </div>
-                <div class="col-md-6 text-right">
-                    <address style="color: #6a1b9a;">
-                        <strong>MOBILE HOUSE</strong><br>
-                        Totsi à côté du Lycée Protestant<br>
-                        Lomé, Togo<br>
+                <div class="text-right">
+                    <address>
+                        Mobile House, Totsi a cote du Lycee Protestant<br>
+                        Togo, Lome<br>
                         +228 70 14 69 79
                     </address>
                 </div>
             </div>
-        </div>
 
-        <!-- Client Details -->
-        <div class="invoice-details">
-            <div class="row">
-                <div class="col-md-8">
-                    <address>
-                        <strong>NOM DU CLIENT :</strong> {{obj.customer.name}}<br>
-                        <strong>ADRESSE DU CLIENT :</strong> {{obj.customer.address}}, {{obj.customer.city}} Togo
-                    </address>
+            <!-- Client and invoice details -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 2;">
+                    <div class="invoice-details">
+                        <address>
+                            <strong>{{obj.customer.name}}</strong><br>
+                            {{obj.customer.address}}, {{obj.customer.city}}, Togo<br>
+                            {% if obj.customer.phone %}
+                                Tél: {{obj.customer.phone}}<br>
+                            {% endif %}
+                            {% if obj.customer.email %}
+                                Email: {{obj.customer.email}}
+                            {% endif %}
+                        </address>
+                    </div>
                 </div>
-                <div class="col-md-4 text-right">
-                    <div class="invoice-num">
-                        <strong>NUMERO DE LA FACTURE :</strong> {{obj.get_invoice_type_display}} - 000{{obj.id}}<br>
-                        <strong>DATE :</strong> {{obj.invoice_date_time}}
+                <div style="flex: 1;">
+                    <div class="invoice-details">
+                        <div class="invoice-num">
+                            <div>{{obj.get_invoice_type_display}} - #{{obj.id|stringformat:"05d"}}</div>
+                            <div>{{obj.invoice_date_time|date:"d/m/Y"}}</div>
+                            <div>{{obj.invoice_date_time|date:"H:i"}}</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Invoice Items -->
+        <!-- Body -->
         <div class="invoice-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ARTICLES</th>
-                        <th>QUANTITES</th>
-                        <th>PRIX UNITAIRE</th>
-                        <th>TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for invoiceitem in obj.invoice_items.all %}
-                    <tr>
-                        <td>{{ invoiceitem.article.name }}</td>
-                        <td>{{ invoiceitem.quantity }}</td>
-                        <td>{{ invoiceitem.unit_price }}</td>
-                        <td><strong>{{ invoiceitem.total_price }}</strong></td>
-                    </tr>
-                  {% endfor %}
-                    <tr>
-                        <td colspan="2">
-                            <strong>COMMENTAIRES : </strong> {{obj.comments}}
-                        </td>
-                        <td><strong>TOTAL</strong></td>
-                        <td><strong>{{obj.total}} FCFA</strong></td>
-                    </tr>
-                    <tr>
-                        <td colspan="3"><strong>LA FACTURE A ETE PAYER ?:</strong></td>
-                        <td>
-                            {% if obj.paid %}
-                                <span class="text-success">OUI</span>
-                            {% else %}
-                                <span class="text-danger">NON</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>ARTICLE</th>
+                            <th>ID PRODUIT</th>
+                            <th>QUANTITE</th>
+                            <th>PRIX UNITAIRE</th>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoiceitem in obj.invoice_items.all %}
+                        <tr>
+                            <td>{{invoiceitem.article.name}}</td>
+                            <td>{{invoiceitem.article.id}}</td>
+                            <td>{{invoiceitem.quantity}}</td>
+                            <td>{{invoiceitem.unit_price|floatformat:2}} FCFA</td>
+                            <td>{{invoiceitem.total_price|floatformat:2}} FCFA</td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <tr>
+                            <td colspan="5">
+                                <strong>Commentaire:</strong> 
+                                {% if obj.comments %}
+                                    {{obj.comments}}
+                                {% else %}
+                                    Aucun commentaire
+                                {% endif %}
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td colspan="2">
+                                <p>
+                                    TOTAL<br>
+                                    Expédition & Manutention<br>
+                                    Taxe<br>
+                                </p>
+                                <h5 class="text-success"><strong>TOTAL</strong></h5>
+                            </td>
+                            <td colspan="2">
+                                <p>
+                                    {{obj.total|floatformat:2}} FCFA<br>
+                                    00.00 FCFA<br>
+                                    00.00 FCFA<br>
+                                </p>
+                                <h5 class="text-success"><strong>{{obj.total|floatformat:2}} FCFA</strong></h5>
+                            </td>
+                            <td>
+                                <strong>PAYER ?:</strong><br><br>
+                                {% if obj.paid %}
+                                    <span style="color: #10b981; font-weight: bold;">✓ PAYÉ</span>
+                                {% else %}
+                                    <span style="color: #ef4444; font-weight: bold;">✗ EN ATTENTE</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Footer -->
         <div class="invoice-footer">
-            <strong style="color: #6a1b9a;">Mobile House! Le Meilleur Sinon Rien, Votre Satisfaction est notre preocupation.</strong>
-        </div>
-        <div>
-            <h4 style="color: #6a1b9a;">LA GARANTIE EST DE UNE SEMAINE (1) !!!</h4>
-            <h1 style="color: #6a1b9a;">NB:</h1>
-            <p style="height: 20px;">-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
-            <p style="height: 20px;">-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
-            <p style="height: 20px;">-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
-            <p style="height: 20px;">-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
-            <p style="height: 20px;">-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam, quos.</p>
+            MERCI POUR VOTRE CONFIANCE
         </div>
     </div>
 </body>

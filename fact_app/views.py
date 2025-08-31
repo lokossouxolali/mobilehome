@@ -18,6 +18,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django import forms
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 
 # Create your views here.
@@ -472,7 +475,9 @@ def get_invoice_pdf(request, *args, **kwargs):
         #Generate pdf
         try:
         # Générer le PDF
-            pdf = pdfkit.from_string(html, False, options)
+            # Configuration du chemin vers wkhtmltopdf
+            config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+            pdf = pdfkit.from_string(html, False, options, configuration=config)
             response = HttpResponse(pdf, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
@@ -513,6 +518,7 @@ def add_admin(request):
 @login_required
 def admin_list(request):
     admins = User.objects.filter(is_staff=True)
+    admins = pagination(request, admins)  # Paginer les admins
     return render(request, 'admin_list.html', {'admins': admins})
 
 # Vue pour ajouter un nouvel article
@@ -616,30 +622,296 @@ def article_list(request):
             messages.error(request, f"Désolé, l'erreur suivante s'est produite : {e}.")
 
 
+    articles = pagination(request, articles)  # Paginer les articles
     return render(request, 'article_list.html', {'articles': articles})
 
 def customer_list(request):
     customers = Customer.objects.all()  # Récupérer tous les produits
+    customers = pagination(request, customers)  # Paginer les clients
     return render(request, 'customer_list.html', {'customers': customers})
 
 def sales_summary(request):
-    sales_data = []
+    # Paginer directement les InvoiceItems
     invoice_items = InvoiceItem.objects.all().order_by('-invoice__invoice_date_time')
-
-    for item in invoice_items:
-        sales_data.append({
-            'article_name': item.article.name,
-            'quantity_sold': item.quantity,
-            'sale_date': item.invoice.invoice_date_time,
-            'customer_name': item.invoice.customer.name,
-            'unit_price': item.unit_price,
-            'total_price': item.total_price,
-        })
-
+    sales_data = pagination(request, invoice_items)
+    
     context = {
         'sales_data': sales_data
     }
     return render(request, 'sales_summary_list.html', context)
+
+
+@superuser_required
+def export_sales_pdf(request):
+    """Export des données de vente en PDF"""
+    try:
+        # Récupérer toutes les données de vente
+        sales_data = InvoiceItem.objects.all().order_by('-invoice__invoice_date_time')
+        
+        # Calculer les statistiques
+        total_sales = sales_data.count()
+        total_revenue = sum(sale.total_price for sale in sales_data)
+        total_quantity = sum(sale.quantity for sale in sales_data)
+        unique_customers = sales_data.values('invoice__customer').distinct().count()
+        
+        # Préparer le contexte
+        context = {
+            'sales_data': sales_data,
+            'total_sales': total_sales,
+            'total_revenue': total_revenue,
+            'total_quantity': total_quantity,
+            'unique_customers': unique_customers,
+            'date': datetime.datetime.now()
+        }
+        
+        # Générer le PDF
+        template = get_template('sales_pdf.html')
+        html = template.render(context)
+        
+        # Options de format PDF
+        options = {
+            'page-size': 'A4',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': '',
+            'margin-top': '0.5in',
+            'margin-right': '0.5in',
+            'margin-bottom': '0.5in',
+            'margin-left': '0.5in'
+        }
+        
+        # Configuration du chemin vers wkhtmltopdf
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+        pdf = pdfkit.from_string(html, False, options, configuration=config)
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="rapport_ventes_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du PDF : {e}")
+        return redirect('sales-summary-list')
+
+
+@superuser_required
+def export_articles_pdf(request):
+    """Export de la liste des articles en PDF"""
+    try:
+        # Récupérer tous les articles
+        articles = Article.objects.filter(is_active=True)
+        
+        # Calculer les statistiques
+        total_articles = articles.count()
+        total_stock = sum(article.stock for article in articles)
+        in_stock = articles.filter(stock__gt=0).count()
+        out_of_stock = articles.filter(stock=0).count()
+        
+        # Préparer le contexte
+        context = {
+            'articles': articles,
+            'total_articles': total_articles,
+            'total_stock': total_stock,
+            'in_stock': in_stock,
+            'out_of_stock': out_of_stock,
+            'date': datetime.datetime.now()
+        }
+        
+        # Générer le PDF
+        template = get_template('articles_pdf.html')
+        html = template.render(context)
+        
+        # Options de format PDF
+        options = {
+            'page-size': 'A4',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': '',
+            'margin-top': '0.5in',
+            'margin-right': '0.5in',
+            'margin-bottom': '0.5in',
+            'margin-left': '0.5in'
+        }
+        
+        # Configuration du chemin vers wkhtmltopdf
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+        pdf = pdfkit.from_string(html, False, options, configuration=config)
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="liste_articles_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du PDF : {e}")
+        return redirect('article-list')
+
+
+@superuser_required
+def export_customers_pdf(request):
+    """Export de la liste des clients en PDF"""
+    try:
+        # Récupérer tous les clients
+        customers = Customer.objects.all()
+        
+        # Calculer les statistiques
+        total_customers = customers.count()
+        active_customers = customers.filter(invoice__isnull=False).distinct().count()
+        total_purchases = Invoice.objects.count()
+        total_revenue = InvoiceItem.objects.filter(
+            invoice__paid=True
+        ).aggregate(
+            total=models.Sum(models.F('quantity') * models.F('unit_price'))
+        )['total'] or 0
+        
+        # Préparer le contexte
+        context = {
+            'customers': customers,
+            'total_customers': total_customers,
+            'active_customers': active_customers,
+            'total_purchases': total_purchases,
+            'total_revenue': total_revenue,
+            'date': datetime.datetime.now()
+        }
+        
+        # Générer le PDF
+        template = get_template('customers_pdf.html')
+        html = template.render(context)
+        
+        # Options de format PDF
+        options = {
+            'page-size': 'A4',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': '',
+            'margin-top': '0.5in',
+            'margin-right': '0.5in',
+            'margin-bottom': '0.5in',
+            'margin-left': '0.5in'
+        }
+        
+        # Configuration du chemin vers wkhtmltopdf
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+        pdf = pdfkit.from_string(html, False, options, configuration=config)
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="liste_clients_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du PDF : {e}")
+        return redirect('customer-list')
+
+
+@superuser_required
+def export_admins_pdf(request):
+    """Export de la liste des administrateurs en PDF"""
+    try:
+        # Récupérer tous les administrateurs
+        admins = User.objects.filter(is_staff=True)
+        
+        # Calculer les statistiques
+        total_admins = admins.count()
+        active_admins = admins.filter(is_active=True).count()
+        superusers = admins.filter(is_superuser=True).count()
+        staff_users = admins.filter(is_staff=True, is_superuser=False).count()
+        
+        # Préparer le contexte
+        context = {
+            'admins': admins,
+            'total_admins': total_admins,
+            'active_admins': active_admins,
+            'superusers': superusers,
+            'staff_users': staff_users,
+            'date': datetime.datetime.now()
+        }
+        
+        # Générer le PDF
+        template = get_template('admins_pdf.html')
+        html = template.render(context)
+        
+        # Options de format PDF
+        options = {
+            'page-size': 'A4',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': '',
+            'margin-top': '0.5in',
+            'margin-right': '0.5in',
+            'margin-bottom': '0.5in',
+            'margin-left': '0.5in'
+        }
+        
+        # Configuration du chemin vers wkhtmltopdf
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+        pdf = pdfkit.from_string(html, False, options, configuration=config)
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="liste_administrateurs_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du PDF : {e}")
+        return redirect('admin-list')
+
+
+@superuser_required
+def export_dashboard_pdf(request):
+    """Export du tableau de bord en PDF"""
+    try:
+        # Récupérer les données du tableau de bord
+        invoices = Invoice.objects.select_related('customer', 'save_by').all().order_by('-invoice_date_time')
+        
+        # Calculer les statistiques
+        total_invoices = Invoice.objects.count()
+        total_customers = Customer.objects.count()
+        total_articles = Article.objects.count()
+        total_revenue = InvoiceItem.objects.filter(
+            invoice__paid=True
+        ).aggregate(
+            total=models.Sum(models.F('quantity') * models.F('unit_price'))
+        )['total'] or 0
+        
+        # Préparer le contexte
+        context = {
+            'invoices': invoices,
+            'total_invoices': total_invoices,
+            'total_customers': total_customers,
+            'total_articles': total_articles,
+            'total_revenue': total_revenue,
+            'date': datetime.datetime.now()
+        }
+        
+        # Générer le PDF
+        template = get_template('dashboard_pdf.html')
+        html = template.render(context)
+        
+        # Options de format PDF
+        options = {
+            'page-size': 'A4',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': '',
+            'margin-top': '0.5in',
+            'margin-right': '0.5in',
+            'margin-bottom': '0.5in',
+            'margin-left': '0.5in'
+        }
+        
+        # Configuration du chemin vers wkhtmltopdf
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+        pdf = pdfkit.from_string(html, False, options, configuration=config)
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="tableau_bord_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du PDF : {e}")
+        return redirect('home')
 
 
 def edit_article(request, article_id):
@@ -736,3 +1008,624 @@ def edit_article(request, article_id):
         # Affiche le formulaire pré-rempli
         context = {'article': article, 'name': article.name, 'stock': article.stock}
         return render(request, 'edit_article.html', context)
+
+
+@superuser_required
+def export_sales_excel(request):
+    """Export des données de vente en format Excel"""
+    try:
+        # Récupérer toutes les données de vente
+        sales_data = InvoiceItem.objects.select_related('invoice__customer', 'article').all().order_by('-invoice__invoice_date_time')
+        
+        # Créer un nouveau classeur Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Ventes"
+        
+        # Styles pour l'en-tête
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="6366F1", end_color="6366F1", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Styles pour les données
+        data_font = Font(size=11)
+        data_alignment = Alignment(horizontal="left", vertical="center")
+        
+        # Styles pour les bordures
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Titre du rapport
+        ws.merge_cells('A1:G1')
+        ws['A1'] = "RAPPORT DES VENTES - MOBILE HOUSE"
+        ws['A1'].font = Font(bold=True, size=16, color="6366F1")
+        ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Date de génération
+        ws.merge_cells('A2:G2')
+        ws['A2'] = f"Généré le {datetime.datetime.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws['A2'].font = Font(size=12, color="64748B")
+        ws['A2'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # En-têtes des colonnes
+        headers = [
+            "N°", "Article", "Quantité Vendue", "Date de Vente", 
+            "Client", "Prix Unitaire (FCFA)", "Prix Total (FCFA)"
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=4, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+        
+        # Données des ventes
+        total_revenue = 0
+        total_quantity = 0
+        
+        for row, sale in enumerate(sales_data, 5):
+            # Numéro de ligne
+            ws.cell(row=row, column=1, value=row-4).alignment = data_alignment
+            ws.cell(row=row, column=1).border = thin_border
+            
+            # Article
+            ws.cell(row=row, column=2, value=sale.article.name).alignment = data_alignment
+            ws.cell(row=row, column=2).border = thin_border
+            
+            # Quantité
+            ws.cell(row=row, column=3, value=sale.quantity).alignment = data_alignment
+            ws.cell(row=row, column=3).border = thin_border
+            total_quantity += sale.quantity
+            
+            # Date de vente
+            sale_date = sale.invoice.invoice_date_time.strftime('%d/%m/%Y %H:%M')
+            ws.cell(row=row, column=4, value=sale_date).alignment = data_alignment
+            ws.cell(row=row, column=4).border = thin_border
+            
+            # Client
+            ws.cell(row=row, column=5, value=sale.invoice.customer.name).alignment = data_alignment
+            ws.cell(row=row, column=5).border = thin_border
+            
+            # Prix unitaire
+            ws.cell(row=row, column=6, value=float(sale.unit_price)).alignment = data_alignment
+            ws.cell(row=row, column=6).border = thin_border
+            
+            # Prix total
+            total_price = float(sale.total_price)
+            ws.cell(row=row, column=7, value=total_price).alignment = data_alignment
+            ws.cell(row=row, column=7).border = thin_border
+            total_revenue += total_price
+        
+        # Ligne de total
+        total_row = len(sales_data) + 5
+        ws.cell(row=total_row, column=1, value="").border = thin_border
+        ws.cell(row=total_row, column=2, value="TOTAL").font = Font(bold=True)
+        ws.cell(row=total_row, column=2).border = thin_border
+        ws.cell(row=total_row, column=3, value=total_quantity).font = Font(bold=True)
+        ws.cell(row=total_row, column=3).border = thin_border
+        ws.cell(row=total_row, column=4, value="").border = thin_border
+        ws.cell(row=total_row, column=5, value="").border = thin_border
+        ws.cell(row=total_row, column=6, value="").border = thin_border
+        ws.cell(row=total_row, column=7, value=total_revenue).font = Font(bold=True)
+        ws.cell(row=total_row, column=7).border = thin_border
+        
+        # Ajuster la largeur des colonnes
+        column_widths = [8, 30, 15, 20, 25, 20, 20]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[get_column_letter(col)].width = width
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="ventes_mobile_house_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        
+        # Sauvegarder le fichier
+        wb.save(response)
+        
+        messages.success(request, "Export Excel des ventes généré avec succès !")
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du fichier Excel : {e}")
+        return redirect('sales-summary')
+
+
+@superuser_required
+def export_articles_excel(request):
+    """Export des données d'articles en format Excel"""
+    try:
+        # Récupérer toutes les données d'articles
+        articles_data = Article.objects.filter(is_active=True).all().order_by('-created_at')
+        
+        # Créer un nouveau classeur Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Articles"
+        
+        # Styles pour l'en-tête
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="6366F1", end_color="6366F1", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Styles pour les données
+        data_font = Font(size=11)
+        data_alignment = Alignment(horizontal="left", vertical="center")
+        
+        # Styles pour les bordures
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Titre du rapport
+        ws.merge_cells('A1:E1')
+        ws['A1'] = "RAPPORT DES ARTICLES - MOBILE HOUSE"
+        ws['A1'].font = Font(bold=True, size=16, color="6366F1")
+        ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Date de génération
+        ws.merge_cells('A2:E2')
+        ws['A2'] = f"Généré le {datetime.datetime.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws['A2'].font = Font(size=12, color="64748B")
+        ws['A2'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # En-têtes des colonnes
+        headers = [
+            "N°", "Nom de l'Article", "Stock", "Date d'Ajout", "Stock Vendus"
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=4, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+        
+        # Données des articles
+        total_stock = 0
+        total_sold = 0
+        
+        for row, article in enumerate(articles_data, 5):
+            # Numéro de ligne
+            ws.cell(row=row, column=1, value=row-4).alignment = data_alignment
+            ws.cell(row=row, column=1).border = thin_border
+            
+            # Nom de l'article
+            ws.cell(row=row, column=2, value=article.name).alignment = data_alignment
+            ws.cell(row=row, column=2).border = thin_border
+            
+            # Stock
+            ws.cell(row=row, column=3, value=article.stock).alignment = data_alignment
+            ws.cell(row=row, column=3).border = thin_border
+            total_stock += article.stock
+            
+            # Date d'ajout
+            created_date = article.created_at.strftime('%d/%m/%Y')
+            ws.cell(row=row, column=4, value=created_date).alignment = data_alignment
+            ws.cell(row=row, column=4).border = thin_border
+            
+            # Stock vendus
+            ws.cell(row=row, column=5, value=article.total_sold).alignment = data_alignment
+            ws.cell(row=row, column=5).border = thin_border
+            total_sold += article.total_sold
+        
+        # Ligne de total
+        total_row = len(articles_data) + 5
+        ws.cell(row=total_row, column=1, value="").border = thin_border
+        ws.cell(row=total_row, column=2, value="TOTAL").font = Font(bold=True)
+        ws.cell(row=total_row, column=2).border = thin_border
+        ws.cell(row=total_row, column=3, value=total_stock).font = Font(bold=True)
+        ws.cell(row=total_row, column=3).border = thin_border
+        ws.cell(row=total_row, column=4, value="").border = thin_border
+        ws.cell(row=total_row, column=5, value=total_sold).font = Font(bold=True)
+        ws.cell(row=total_row, column=5).border = thin_border
+        
+        # Ajuster la largeur des colonnes
+        column_widths = [8, 35, 15, 15, 15]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[get_column_letter(col)].width = width
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="articles_mobile_house_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        
+        # Sauvegarder le fichier
+        wb.save(response)
+        
+        messages.success(request, "Export Excel des articles généré avec succès !")
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du fichier Excel : {e}")
+        return redirect('article-list')
+
+
+@superuser_required
+def export_customers_excel(request):
+    """Export des données de clients en format Excel"""
+    try:
+        # Récupérer toutes les données de clients
+        customers_data = Customer.objects.all().order_by('-id')
+        
+        # Créer un nouveau classeur Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Clients"
+        
+        # Styles pour l'en-tête
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="6366F1", end_color="6366F1", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Styles pour les données
+        data_font = Font(size=11)
+        data_alignment = Alignment(horizontal="left", vertical="center")
+        
+        # Styles pour les bordures
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Titre du rapport
+        ws.merge_cells('A1:F1')
+        ws['A1'] = "RAPPORT DES CLIENTS - MOBILE HOUSE"
+        ws['A1'].font = Font(bold=True, size=16, color="6366F1")
+        ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Date de génération
+        ws.merge_cells('A2:F2')
+        ws['A2'] = f"Généré le {datetime.datetime.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws['A2'].font = Font(size=12, color="64748B")
+        ws['A2'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # En-têtes des colonnes
+        headers = [
+            "N°", "Nom du Client", "Email", "Téléphone", "Adresse", "Nombre d'Achats"
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=4, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+        
+        # Données des clients
+        total_customers = 0
+        total_purchases = 0
+        
+        for row, customer in enumerate(customers_data, 5):
+            # Numéro de ligne
+            ws.cell(row=row, column=1, value=row-4).alignment = data_alignment
+            ws.cell(row=row, column=1).border = thin_border
+            
+            # Nom du client
+            ws.cell(row=row, column=2, value=customer.name).alignment = data_alignment
+            ws.cell(row=row, column=2).border = thin_border
+            
+            # Email
+            ws.cell(row=row, column=3, value=customer.email or "").alignment = data_alignment
+            ws.cell(row=row, column=3).border = thin_border
+            
+            # Téléphone
+            ws.cell(row=row, column=4, value=customer.phone or "").alignment = data_alignment
+            ws.cell(row=row, column=4).border = thin_border
+            
+            # Adresse
+            address = f"{customer.address}, {customer.city}" if customer.address and customer.city else (customer.address or customer.city or "")
+            ws.cell(row=row, column=5, value=address).alignment = data_alignment
+            ws.cell(row=row, column=5).border = thin_border
+            
+            # Nombre d'achats
+            purchase_count = customer.invoice_set.count()
+            ws.cell(row=row, column=6, value=purchase_count).alignment = data_alignment
+            ws.cell(row=row, column=6).border = thin_border
+            total_purchases += purchase_count
+            
+            total_customers += 1
+        
+        # Ligne de total
+        total_row = len(customers_data) + 5
+        ws.cell(row=total_row, column=1, value="").border = thin_border
+        ws.cell(row=total_row, column=2, value="TOTAL").font = Font(bold=True)
+        ws.cell(row=total_row, column=2).border = thin_border
+        ws.cell(row=total_row, column=3, value="").border = thin_border
+        ws.cell(row=total_row, column=4, value="").border = thin_border
+        ws.cell(row=total_row, column=5, value="").border = thin_border
+        ws.cell(row=total_row, column=6, value=total_purchases).font = Font(bold=True)
+        ws.cell(row=total_row, column=6).border = thin_border
+        
+        # Ajuster la largeur des colonnes
+        column_widths = [8, 25, 25, 15, 30, 15]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[get_column_letter(col)].width = width
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="clients_mobile_house_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        
+        # Sauvegarder le fichier
+        wb.save(response)
+        
+        messages.success(request, "Export Excel des clients généré avec succès !")
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du fichier Excel : {e}")
+        return redirect('customer-list')
+
+
+@superuser_required
+def export_admins_excel(request):
+    """Export des données d'administrateurs en format Excel"""
+    try:
+        # Récupérer toutes les données d'administrateurs
+        admins_data = User.objects.filter(is_staff=True).all().order_by('-date_joined')
+        
+        # Créer un nouveau classeur Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Administrateurs"
+        
+        # Styles pour l'en-tête
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="6366F1", end_color="6366F1", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Styles pour les données
+        data_font = Font(size=11)
+        data_alignment = Alignment(horizontal="left", vertical="center")
+        
+        # Styles pour les bordures
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Titre du rapport
+        ws.merge_cells('A1:E1')
+        ws['A1'] = "RAPPORT DES ADMINISTRATEURS - MOBILE HOUSE"
+        ws['A1'].font = Font(bold=True, size=16, color="6366F1")
+        ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Date de génération
+        ws.merge_cells('A2:E2')
+        ws['A2'] = f"Généré le {datetime.datetime.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws['A2'].font = Font(size=12, color="64748B")
+        ws['A2'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # En-têtes des colonnes
+        headers = [
+            "N°", "Nom d'Utilisateur", "Email", "Date d'Inscription", "Statut"
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=4, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+        
+        # Données des administrateurs
+        total_admins = 0
+        superusers = 0
+        staff_users = 0
+        
+        for row, admin in enumerate(admins_data, 5):
+            # Numéro de ligne
+            ws.cell(row=row, column=1, value=row-4).alignment = data_alignment
+            ws.cell(row=row, column=1).border = thin_border
+            
+            # Nom d'utilisateur
+            ws.cell(row=row, column=2, value=admin.username).alignment = data_alignment
+            ws.cell(row=row, column=2).border = thin_border
+            
+            # Email
+            ws.cell(row=row, column=3, value=admin.email or "").alignment = data_alignment
+            ws.cell(row=row, column=3).border = thin_border
+            
+            # Date d'inscription
+            join_date = admin.date_joined.strftime('%d/%m/%Y')
+            ws.cell(row=row, column=4, value=join_date).alignment = data_alignment
+            ws.cell(row=row, column=4).border = thin_border
+            
+            # Statut
+            if admin.is_superuser:
+                status = "Super Admin"
+                superusers += 1
+            elif admin.is_staff:
+                status = "Staff"
+                staff_users += 1
+            else:
+                status = "Utilisateur"
+            
+            ws.cell(row=row, column=5, value=status).alignment = data_alignment
+            ws.cell(row=row, column=5).border = thin_border
+            
+            total_admins += 1
+        
+        # Ligne de total
+        total_row = len(admins_data) + 5
+        ws.cell(row=total_row, column=1, value="").border = thin_border
+        ws.cell(row=total_row, column=2, value="TOTAL").font = Font(bold=True)
+        ws.cell(row=total_row, column=2).border = thin_border
+        ws.cell(row=total_row, column=3, value="").border = thin_border
+        ws.cell(row=total_row, column=4, value="").border = thin_border
+        ws.cell(row=total_row, column=5, value=total_admins).font = Font(bold=True)
+        ws.cell(row=total_row, column=5).border = thin_border
+        
+        # Ajuster la largeur des colonnes
+        column_widths = [8, 25, 30, 20, 15]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[get_column_letter(col)].width = width
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="admins_mobile_house_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        
+        # Sauvegarder le fichier
+        wb.save(response)
+        
+        messages.success(request, "Export Excel des administrateurs généré avec succès !")
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du fichier Excel : {e}")
+        return redirect('admin-list')
+
+
+@superuser_required
+def export_dashboard_excel(request):
+    """Export des données du tableau de bord en format Excel"""
+    try:
+        # Récupérer toutes les données
+        invoices_data = Invoice.objects.select_related('customer').all().order_by('-invoice_date_time')[:10]  # 10 dernières factures
+        
+        # Créer un nouveau classeur Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Tableau de Bord"
+        
+        # Styles pour l'en-tête
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="6366F1", end_color="6366F1", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Styles pour les données
+        data_font = Font(size=11)
+        data_alignment = Alignment(horizontal="left", vertical="center")
+        
+        # Styles pour les bordures
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Titre du rapport
+        ws.merge_cells('A1:E1')
+        ws['A1'] = "TABLEAU DE BORD - MOBILE HOUSE"
+        ws['A1'].font = Font(bold=True, size=16, color="6366F1")
+        ws['A1'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Date de génération
+        ws.merge_cells('A2:E2')
+        ws['A2'] = f"Généré le {datetime.datetime.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws['A2'].font = Font(size=12, color="64748B")
+        ws['A2'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Statistiques générales
+        ws.merge_cells('A4:E4')
+        ws['A4'] = "STATISTIQUES GÉNÉRALES"
+        ws['A4'].font = Font(bold=True, size=14, color="1E293B")
+        ws['A4'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Calculer les statistiques
+        total_invoices = Invoice.objects.count()
+        total_customers = Customer.objects.count()
+        total_articles = Article.objects.count()
+        total_revenue = InvoiceItem.objects.filter(
+            invoice__paid=True
+        ).aggregate(
+            total=models.Sum(models.F('quantity') * models.F('unit_price'))
+        )['total'] or 0
+        
+        # Statistiques
+        stats_data = [
+            ["Total des Factures", total_invoices],
+            ["Total des Clients", total_customers],
+            ["Total des Articles", total_articles],
+            ["Chiffre d'Affaires (FCFA)", f"{total_revenue:.2f}"]
+        ]
+        
+        for row, (label, value) in enumerate(stats_data, 5):
+            ws.cell(row=row, column=1, value=label).font = Font(bold=True)
+            ws.cell(row=row, column=1).border = thin_border
+            ws.cell(row=row, column=2, value=value).border = thin_border
+            ws.cell(row=row, column=3, value="").border = thin_border
+            ws.cell(row=row, column=4, value="").border = thin_border
+            ws.cell(row=row, column=5, value="").border = thin_border
+        
+        # Factures récentes
+        ws.merge_cells('A9:E9')
+        ws['A9'] = "FACTURES RÉCENTES"
+        ws['A9'].font = Font(bold=True, size=14, color="1E293B")
+        ws['A9'].alignment = Alignment(horizontal="center", vertical="center")
+        
+        # En-têtes des colonnes pour les factures
+        invoice_headers = [
+            "N°", "Client", "Date", "Montant (FCFA)", "Statut"
+        ]
+        
+        for col, header in enumerate(invoice_headers, 1):
+            cell = ws.cell(row=11, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+        
+        # Données des factures récentes
+        for row, invoice in enumerate(invoices_data, 12):
+            # Numéro de ligne
+            ws.cell(row=row, column=1, value=row-11).alignment = data_alignment
+            ws.cell(row=row, column=1).border = thin_border
+            
+            # Client
+            ws.cell(row=row, column=2, value=invoice.customer.name).alignment = data_alignment
+            ws.cell(row=row, column=2).border = thin_border
+            
+            # Date
+            invoice_date = invoice.invoice_date_time.strftime('%d/%m/%Y %H:%M')
+            ws.cell(row=row, column=3, value=invoice_date).alignment = data_alignment
+            ws.cell(row=row, column=3).border = thin_border
+            
+            # Montant
+            total_amount = invoice.total_amount
+            ws.cell(row=row, column=4, value=f"{total_amount:.2f}").alignment = data_alignment
+            ws.cell(row=row, column=4).border = thin_border
+            
+            # Statut
+            status = "Payée" if invoice.paid else "En attente"
+            ws.cell(row=row, column=5, value=status).alignment = data_alignment
+            ws.cell(row=row, column=5).border = thin_border
+        
+        # Ajuster la largeur des colonnes
+        column_widths = [8, 25, 20, 20, 15]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[get_column_letter(col)].width = width
+        
+        # Créer la réponse HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="tableau_bord_mobile_house_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        
+        # Sauvegarder le fichier
+        wb.save(response)
+        
+        messages.success(request, "Export Excel du tableau de bord généré avec succès !")
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la génération du fichier Excel : {e}")
+        return redirect('home')

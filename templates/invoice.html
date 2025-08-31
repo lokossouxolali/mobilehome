@@ -1,168 +1,598 @@
 {% extends "base.html" %}
-
 {% load static %}
 
 {% block content %}
+<div class="invoice-container">
+    <div class="invoice-card">
+        <!-- Actions -->
+        <div class="invoice-actions">
+            <a href="{% url 'invoice-pdf' pk=obj.pk %}" class="btn-download">
+                <i class="fas fa-download"></i>
+                Télécharger PDF
+            </a>
+            <button onclick="window.print()" class="btn-print">
+                <i class="fas fa-print"></i>
+                Imprimer
+            </button>
+        </div>
 
-<div class="container">
-    <div class="row gutters">
-    	<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-    		<div class="card">
-    			<div class="card-body p-0">
-    				<div class="invoice-container">
-    					<div class="invoice-header">
-    
-    						<!-- Row start -->
-    						<div class="row gutters">
-    							<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-    								<div class="custom-actions-btns mb-5">
-    									<a href="{% url 'invoice-pdf' pk=obj.pk %}" class="btn btn-primary">
-    										<i class="icon-download"></i> TELECHARGER
-    									</a>
-    									<a href="#" class="btn btn-secondary">
-    										<i class="icon-printer"></i> IMPRIMER
-    									</a>
-    								</div>
-    							</div>
-    						</div>
-    						<!-- Row end -->
-    
-    						<!-- Row start -->
-    						<div class="row gutters">
-    							<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6">
-    								<a href="#" class="invoice-logo">
-    									MOBILE HOUSE
-    								</a>
-    							</div>
-    							<div class="col-lg-6 col-md-6 col-sm-6">
-    								<address class="text-right">
-    									Mobile House, Totsi a cote du Lycee Prostetant<br>
-    									Togo, Lome<br>
-    									+228 70 14 69 79
-    								</address>
-    							</div>
-    						</div>
-    						<!-- Row end -->
-    
-    						<!-- Row start -->
-    						<div class="row gutters">
-    							<div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12">
-    								<div class="invoice-details">
-    									<address>
-    										{{obj.customer.name}}<br>
-    										{{obj.customer.address}}, {{obj.customer.city}}, Togo
-    									</address>
-    								</div>
-    							</div>
-    							<div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12">
-    								<div class="invoice-details">
-    									<div class="invoice-num">
-    										<div>{{obj.get_invoice_type_display}} - #00{{obj.id}}</div>
-    										<div>{{obj.invoice_date_time}}</div>
-    									</div>
-    								</div>													
-    							</div>
-    						</div>
-    						<!-- Row end -->
-    
-    					</div>
-    
-    					<div class="invoice-body">
-    
-    						<!-- Row start -->
-    						<div class="row gutters">
-    							<div class="col-lg-12 col-md-12 col-sm-12">
-    								<div class="table-responsive">
-    									<table class="table custom-table m-0">
-    										<thead>
-    											<tr>
-    												<th>ARTICLES</th>
-													<th>QUANTITE</th>
-													<th>PRIX UNITAIRE</th>
-													<th>TOTAL</th>
-    											</tr>
-    										</thead>
-    										<tbody>
-												{% for invoiceitem in obj.invoice_items.all %}
-                                              
-    											<tr>
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="header-left">
+                <div class="status-badge">
+                    {% if obj.paid %}
+                        <span class="status-paid">PAYÉ</span>
+                    {% else %}
+                        <span class="status-pending">EN ATTENTE</span>
+                    {% endif %}
+                </div>
+                <div class="invoice-info">
+                    <h1 class="invoice-title">{{obj.get_invoice_type_display}} #{{obj.id|stringformat:"05d"}}</h1>
+                    <div class="invoice-details">
+                        <div class="detail-item">
+                            <span class="label">Numéro de facture</span>
+                            <span class="value">{{obj.id|stringformat:"05d"}}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Date d'émission</span>
+                            <span class="value">{{obj.invoice_date_time|date:"d/m/Y"}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="company-logo">
+                    <div class="logo-icon">MH</div>
+                    <div class="logo-text">Mobile House</div>
+                </div>
+                <div class="company-info">
+                    <h3>Mobile House</h3>
+                    <p>Totsi à côté du Lycée Protestant<br>
+                    Togo, Lomé<br>
+                    +228 70 14 69 79</p>
+                </div>
+            </div>
+        </div>
 
-                                                   
+        <!-- Client and Summary -->
+        <div class="invoice-summary">
+            <div class="client-section">
+                <h3 class="section-title">Client</h3>
+                <div class="client-info">
+                    <h4>{{obj.customer.name}}</h4>
+                    <p>{{obj.customer.address}}</p>
+                    <p>{{obj.customer.city}}, Togo</p>
+                    <p>Tél: {{obj.customer.phone}}</p>
+                </div>
+            </div>
+            <div class="financial-summary">
+                <div class="summary-item">
+                    <span class="label">Montant total</span>
+                    <span class="value">{{obj.total}} FCFA</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Montant payé</span>
+                    <span class="value">
+                        {% if obj.paid %}
+                            {{obj.total}} FCFA
+                        {% else %}
+                            0.00 FCFA
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="summary-item total">
+                    <span class="label">Solde dû</span>
+                    <span class="value">
+                        {% if obj.paid %}
+                            0.00 FCFA
+                        {% else %}
+                            {{obj.total}} FCFA
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="due-date">
+                    <span class="label">Date d'échéance</span>
+                    <span class="value">{{obj.invoice_date_time|date:"d/m/Y"}}</span>
+                </div>
+            </div>
+        </div>
 
-                                                    <td>
-    													{{ invoiceitem.article.name }}
-    													
-    												</td>
+        <!-- Items Table -->
+        <div class="invoice-items">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Article & Description</th>
+                        <th>Qté.</th>
+                        <th>Prix unit.</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoiceitem in obj.invoice_items.all %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{invoiceitem.article.name}}</td>
+                        <td>{{invoiceitem.quantity}}</td>
+                        <td>{{invoiceitem.unit_price}} FCFA</td>
+                        <td>{{invoiceitem.total_price}} FCFA</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-													<td>
-    													{{ invoiceitem.quantity }}
-    													
-    												</td>
+        <!-- Totals -->
+        <div class="invoice-totals">
+            <div class="totals-section">
+                <div class="total-item">
+                    <span class="label">Sous-total</span>
+                    <span class="value">{{obj.total}} FCFA</span>
+                </div>
+                <div class="total-item">
+                    <span class="label">Taxe</span>
+                    <span class="value">0.00 FCFA</span>
+                </div>
+                <div class="total-item final">
+                    <span class="label">Total</span>
+                    <span class="value">{{obj.total}} FCFA</span>
+                </div>
+                <div class="total-item balance">
+                    <span class="label">Solde dû</span>
+                    <span class="value">
+                        {% if obj.paid %}
+                            0.00 FCFA
+                        {% else %}
+                            {{obj.total}} FCFA
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
 
-													<td>
-    													{{ invoiceitem.unit_price }}
-    													
-    												</td>
+        <!-- Comments -->
+        {% if obj.comments %}
+        <div class="invoice-comments">
+            <h4>Commentaires</h4>
+            <p>{{obj.comments}}</p>
+        </div>
+        {% endif %}
 
-													<td>
-    													{{ invoiceitem.total_price }}
-    													
-    												</td>
-
-                                                    
-    												
-    											</tr>
-                                               {% endfor %} 
-    											
-    											
-    											<tr>
-    												<td>Commentaires: {{obj.comments}}</td>
-    												<td colspan="2">
-														<p>
-															Subtotal<br>
-															Shipment &amp; Handling<br>
-															Tax<br>
-														</p>
-    													<h5 class="text-success"><strong>Total</strong></h5>
-    												</td>			
-    												<td>
-    													<p>
-    														{{obj.total}} FCFA<br>
-    														00.00 FCFA<br>
-    														00.00 FCFA<br>
-    													</p>
-    													<h5 class="text-success"><strong>{{obj.total}} FCFA</strong></h5>
-    												</td>
-                                                    <td> 
-                                                            PAYER ?:                    
-
-                                                        {% if obj.paid  %}
-
-                                                           <img class="icon" src="{% static 'images/icon-yes.svg' %}" alt="True">
-                                                        {% else %}
-                                                            <img class="icon" src="{% static 'images/icon-no.svg' %}" alt="False">
-   
-                                                        {% endif %}
-                                                    </td>
-    											</tr>
-    										</tbody>
-    									</table>
-    								</div>
-    							</div>
-    						</div>
-    						<!-- Row end -->
-    
-    					</div>
-    
-    					<div class="invoice-footer">
-    						MERCI POUR VOTRE CONFIANCE.
-    					</div>
-    
-    				</div>
-    			</div>
-    		</div>
-    	</div>
+        <!-- Footer -->
+        <div class="invoice-footer">
+            <p>Merci pour votre confiance.</p>
+        </div>
     </div>
 </div>
 
+<style>
+.invoice-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.invoice-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    border: 1px solid #e9ecef;
+}
+
+/* Actions */
+.invoice-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    justify-content: flex-end;
+}
+
+.btn-download, .btn-print {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-download:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-print {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+.btn-print:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* Header */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.status-badge {
+    margin-bottom: 16px;
+}
+
+.status-paid, .status-pending {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-paid {
+    background: #10b981;
+    color: white;
+}
+
+.status-pending {
+    background: #f59e0b;
+    color: white;
+}
+
+.invoice-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 16px 0;
+}
+
+.invoice-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-item .label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.detail-item .value {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.header-right {
+    text-align: right;
+}
+
+.company-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    justify-content: flex-end;
+}
+
+.logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.company-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.company-info p {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Summary */
+.invoice-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.client-section .section-title {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.client-info h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.client-info p {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0 0 4px 0;
+    line-height: 1.5;
+}
+
+.financial-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-item .label {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.summary-item .value {
+    font-size: 16px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.summary-item.total .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.due-date {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Items Table */
+.invoice-items {
+    margin-bottom: 40px;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.items-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.items-table th {
+    padding: 16px 12px;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.items-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f3f4;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.items-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Totals */
+.invoice-totals {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 30px;
+}
+
+.totals-section {
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.total-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.total-item .label {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.total-item .value {
+    font-size: 16px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.total-item.final .value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.total-item.balance {
+    padding-top: 16px;
+    border-top: 2px solid #e9ecef;
+    margin-top: 8px;
+}
+
+.total-item.balance .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Comments */
+.invoice-comments {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.invoice-comments h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.invoice-comments p {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Footer */
+.invoice-footer {
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid #e9ecef;
+}
+
+.invoice-footer p {
+    font-size: 16px;
+    color: #6c757d;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .invoice-container {
+        padding: 16px;
+    }
+    
+    .invoice-card {
+        padding: 24px;
+    }
+    
+    .invoice-header {
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+    }
+    
+    .header-right {
+        text-align: left;
+    }
+    
+    .company-logo {
+        justify-content: flex-start;
+    }
+    
+    .invoice-summary {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .invoice-actions {
+        flex-direction: column;
+    }
+    
+    .totals-section {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+/* Print styles */
+@media print {
+    .invoice-actions {
+        display: none;
+    }
+    
+    .invoice-container {
+        background: white;
+        padding: 0;
+    }
+    
+    .invoice-card {
+        box-shadow: none;
+        border: none;
+        padding: 20px;
+    }
+}
+</style>
 {% endblock content %}

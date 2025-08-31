@@ -21,8 +21,8 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <img src="{% static 'images/mobilehouse.svg' %}" alt="Mobile House" class="logo-img">
-                    <span class="logo-text">Mobile House</span>
+                    <img src="{% static 'images/photo.jpeg' %}" alt="Photo" class="logo-img">
+                    <span class="logo-text">Entreprise</span>
                 </div>
             </div>
             
@@ -53,7 +53,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="#" class="nav-link {% if 'invoice' in request.resolver_match.url_name %}active{% endif %}">
                             <i class="fas fa-file-invoice"></i>
                             <span>Factures</span>
                         </a>
@@ -74,7 +74,7 @@
                     </div>
                     <div class="user-info">
                         <span class="user-name">Administrateur</span>
-                        <span class="user-email">admin@mobilehouse.com</span>
+                        <span class="user-email">admin@entreprise.com</span>
                     </div>
                 </div>
             </div>
@@ -82,6 +82,8 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Messages -->
+            {% include 'partials/messages.html' %}
             <!-- Header -->
             <header class="main-header">
                 <div class="header-left">
@@ -105,17 +107,6 @@
 
             <!-- Content Area -->
             <div class="content-area">
-                {% if messages %}
-                <div class="messages-container">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message|safe }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
                 {% block content %}
                 {% endblock content %}
             </div>

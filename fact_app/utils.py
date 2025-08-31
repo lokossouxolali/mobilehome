@@ -2,13 +2,13 @@ from django.core.paginator import (Paginator, EmptyPage, PageNotAnInteger)
 from fact_app.models import Invoice
 from .models import *
 
-def pagination(request, invoices):
+def pagination(request, items):
      #default_page
         default_page = 1
         page = request.GET.get('page', default_page)
         #Paginate items
-        items_per_page = 5
-        paginator = Paginator(invoices, items_per_page)
+        items_per_page = 10  # Augmenté à 10 éléments par page
+        paginator = Paginator(items, items_per_page)
         try:
             items_page = paginator.page(page)
         except PageNotAnInteger:
@@ -16,8 +16,6 @@ def pagination(request, invoices):
         except EmptyPage:
             items_page = paginator.page(paginator.num_pages)
 
-        invoices = Invoice.objects.all().order_by('-invoice_date_time')  # Trie par date de manière décroissante
-        paginator = Paginator(invoices, items_per_page)
         return items_page
 
 from django.shortcuts import get_object_or_404

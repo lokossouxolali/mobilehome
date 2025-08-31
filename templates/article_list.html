@@ -2,19 +2,6 @@
 {% load static %}
 
 {% block content %}
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <div class="message">{{ message }}</div>
-        {% endfor %}
-    </div>
-
-    <script>
-        setTimeout(function() {
-            document.querySelector('.messages').style.display = 'none';
-        }, 15000); // 15 secondes
-    </script>
-{% endif %}
 <br><br>
 
 <!-- Filtres de recherche -->
@@ -63,19 +50,19 @@
             </svg>
         </div>
         
-        <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <a href="{% url 'export-articles-pdf' %}" class="export-btn" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
             </svg>
             Exporter PDF
-        </button>
+        </a>
         
-        <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <a href="{% url 'export-articles-excel' %}" class="export-btn" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z"/>
             </svg>
             Exporter Excel
-        </button>
+        </a>
         
         <a href="{% url 'add-article' %}" style="background-color: #6366f1; border: none; border-radius: 6px; padding: 8px 12px; color: white; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none; font-weight: 500;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -126,20 +113,38 @@
 
    <!-- Pagination si nécessaire -->
    {% if articles.has_other_pages %}
-   <div class="btn-group" role="group" aria-label="Item pagination">
-      {% if articles.has_previous %}
-         <a href="?page={{ articles.previous_page_number }}" class="btn btn-outline-primary">&laquo;</a>
-      {% endif %}
-      {% for page_number in articles.paginator.page_range %}
-         {% if articles.number == page_number %}
-            <button class="btn btn-outline-primary active">{{ page_number }}</button>
-         {% else %}
-            <a href="?page={{ page_number }}" class="btn btn-outline-primary">{{ page_number }}</a>
-         {% endif %}
-      {% endfor %}
-      {% if articles.has_next %}
-         <a href="?page={{ articles.next_page_number }}" class="btn btn-outline-primary">&raquo;</a>
-      {% endif %}
+   <div class="card-footer" style="margin-top: 20px;">
+       <nav aria-label="Pagination">
+           <ul class="pagination justify-content-center mb-0">
+               {% if articles.has_previous %}
+                   <li class="page-item mx-2">
+                       <a class="page-link" href="?page={{ articles.previous_page_number }}">
+                           <i class="fas fa-chevron-left"></i>
+                       </a>
+                   </li>
+               {% endif %}
+               
+               {% for page_number in articles.paginator.page_range %}
+                   {% if articles.number == page_number %}
+                       <li class="page-item active mx-2">
+                           <span class="page-link">{{ page_number }}</span>
+                       </li>
+                   {% else %}
+                       <li class="page-item mx-2">
+                           <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                       </li>
+                   {% endif %}
+               {% endfor %}
+               
+               {% if articles.has_next %}
+                   <li class="page-item mx-2">
+                       <a class="page-link" href="?page={{ articles.next_page_number }}">
+                           <i class="fas fa-chevron-right"></i>
+                       </a>
+                   </li>
+               {% endif %}
+           </ul>
+       </nav>
    </div>
    {% endif %}
 </div>

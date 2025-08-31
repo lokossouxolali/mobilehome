@@ -2,98 +2,74 @@
 {% load static %}
 
 {% block content %}
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <div class="message">{{ message }}</div>
-        {% endfor %}
-    </div>
-
-    <script>
-        setTimeout(function() {
-            document.querySelector('.messages').style.display = 'none';
-        }, 15000); // 15 secondes
-    </script>
-{% endif %}
 <br><br>
 
 <!-- Filtres de recherche -->
-<div class="filters-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: -50px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <!-- Filtres à gauche -->
-    <div class="left-filters" style="display: flex; gap: 8px; align-items: center;">
-        <div class="filter-dropdown" style="position: relative;">
-            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 120px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <span>Tous les employés</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 10l5 5 5-5z"/>
-                </svg>
-            </button>
-            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 120px;">
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Tous les employés</a></li>
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Employé 1</a></li>
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Employé 2</a></li>
-            </ul>
-        </div>
-        
-        <div class="filter-dropdown" style="position: relative;">
-            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 80px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <span>Statut</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 10l5 5 5-5z"/>
-                </svg>
-            </button>
-            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 100px;">
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Tous les statuts</a></li>
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">En cours</a></li>
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Terminé</a></li>
-                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px;">Annulé</a></li>
-            </ul>
-        </div>
-        
-        <div class="filter-dropdown" style="position: relative;">
-            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 80px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <span>Mensuel</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 10l5 5 5-5z"/>
-                </svg>
-            </button>
-            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 120px;">
-                <li><a class="dropdown-item" href="#" data-period="day" style="padding: 8px 12px; font-size: 14px;">Aujourd'hui</a></li>
-                <li><a class="dropdown-item" href="#" data-period="week" style="padding: 8px 12px; font-size: 14px;">Cette semaine</a></li>
-                <li><a class="dropdown-item" href="#" data-period="month" style="padding: 8px 12px; font-size: 14px;">Ce mois-ci</a></li>
-                <li><a class="dropdown-item" href="#" data-period="year" style="padding: 8px 12px; font-size: 14px;">Cette année</a></li>
-            </ul>
-        </div>
-        
-        <button class="filter-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; justify-content: center; width: 40px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
-            </svg>
-        </button>
+<div class="filters-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <!-- Titre et compteur -->
+    <div style="display: flex; flex-direction: column;">
+        <h5 class="card-title mb-0" style="margin: 0; font-size: 18px; font-weight: 600; color: #1e293b;">Liste des Ventes</h5>
+        <p class="card-subtitle mb-0" style="margin: 0; font-size: 14px; color: #64748b;">{{ invoices.count }} ventes trouvées</p>
     </div>
     
-    <!-- Recherche et export à droite -->
+    <!-- Filtres à droite -->
     <div class="right-actions" style="display: flex; gap: 8px; align-items: center;">
+        <div class="filter-dropdown" style="position: relative;">
+            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 120px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <span>Toutes les ventes</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </button>
+            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 120px; background: white; border: 1px solid #e9ecef; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 8px 0; margin-top: 4px;">
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">Toutes les ventes</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">Payées</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">En attente</a></li>
+            </ul>
+        </div>
+        
+        <div class="filter-dropdown" style="position: relative;">
+            <button class="filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; min-width: 100px; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <span>Période</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </button>
+            <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 120px; background: white; border: 1px solid #e9ecef; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 8px 0; margin-top: 4px;">
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">Toutes les périodes</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">Aujourd'hui</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">Cette semaine</a></li>
+                <li><a class="dropdown-item" href="#" style="padding: 8px 12px; font-size: 14px; color: #495057; text-decoration: none; display: block;">Ce mois</a></li>
+            </ul>
+        </div>
+        
         <div class="search-container" style="position: relative; display: flex; align-items: center; margin-top: 24px;">
-            <input id="search_article" type="text" placeholder="Rechercher..." style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px 8px 35px; color: #495057; font-size: 14px; width: 200px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); line-height: 1; box-sizing: border-box;">
+            <input id="search" type="text" placeholder="Rechercher..." style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px 8px 35px; color: #495057; font-size: 14px; width: 200px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); line-height: 1; box-sizing: border-box;">
             <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #6c757d;" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
             </svg>
         </div>
         
-        <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <a href="{% url 'export-sales-pdf' %}" class="export-btn" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
             </svg>
             Exporter PDF
-        </button>
+        </a>
         
-        <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <a href="{% url 'export-sales-excel' %}" class="export-btn" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z"/>
             </svg>
             Exporter Excel
-        </button>
+        </a>
+        
+        <a href="{% url 'add-invoice' %}" style="background-color: #6366f1; border: none; border-radius: 6px; padding: 8px 12px; color: white; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none; font-weight: 500;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+            </svg>
+            Nouvelle Vente
+        </a>
     </div>
 </div>
 
@@ -117,10 +93,10 @@
             {% for sale in sales_data %}
             <tr>
                 <th scope="row">{{ forloop.counter }}</th>  
-                <td class="article">{{ sale.article_name }}</td>
-                <td class="quantity">{{ sale.quantity_sold }}</td>
-                <td class="date" data-date="{{ sale.sale_date }}">{{ sale.sale_date }}</td>
-                <td class="customer">{{ sale.customer_name }}</td>
+                <td class="article">{{ sale.article.name }}</td>
+                <td class="quantity">{{ sale.quantity }}</td>
+                <td class="date" data-date="{{ sale.invoice.invoice_date_time }}">{{ sale.invoice.invoice_date_time }}</td>
+                <td class="customer">{{ sale.invoice.customer.name }}</td>
                 <td class="unit_price">{{ sale.unit_price }}</td>
                 <td class="total_price">{{ sale.total_price }}</td>
             </tr>
@@ -132,11 +108,48 @@
             {% endif %}
         </tbody>
     </table>
+    
+    <!-- Pagination if needed -->
+    {% if sales_data.has_other_pages %}
+    <div class="card-footer" style="margin-top: 20px;">
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center mb-0">
+                {% if sales_data.has_previous %}
+                    <li class="page-item mx-2">
+                        <a class="page-link" href="?page={{ sales_data.previous_page_number }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page_number in sales_data.paginator.page_range %}
+                    {% if sales_data.number == page_number %}
+                        <li class="page-item active mx-2">
+                            <span class="page-link">{{ page_number }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item mx-2">
+                            <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if sales_data.has_next %}
+                    <li class="page-item mx-2">
+                        <a class="page-link" href="?page={{ sales_data.next_page_number }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    var searchArticle = document.getElementById("search_article");
+    var searchArticle = document.getElementById("search");
     var tableBody = document.getElementById("myTable");
     var tableRows = tableBody.querySelectorAll("tr");
     
@@ -213,17 +226,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Écouteur d'événement pour la recherche
     searchArticle.addEventListener("input", filterTable);
     
-    // Gestion des boutons d'export
+    // Gestion du bouton d'export Excel
     document.querySelectorAll('.export-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            if (this.textContent.includes('PDF')) {
-                // Logique d'export PDF
-                alert('Export PDF en cours...');
-            } else if (this.textContent.includes('Excel')) {
+        if (btn.textContent.includes('Excel')) {
+            btn.addEventListener('click', function() {
                 // Logique d'export Excel
                 alert('Export Excel en cours...');
-            }
-        });
+            });
+        }
     });
 });
 </script>

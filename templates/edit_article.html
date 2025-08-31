@@ -1,56 +1,257 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-<style>
-    .form-group {
-        width: 100%;
-        padding: 8px;
-        font-size: 16px;
-    }
-    .error {
-        color: red;
-    }
-</style>
-
 {% block content %}
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <div class="message {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-
-    <script>
-        setTimeout(function() {
-            document.querySelector('.messages').style.display = 'none';
-        }, 15000); // 15 secondes
-    </script>
-{% endif %}
-<br><br>
-<h1 class="text-capitalize text-center mx-10 bg-dark text-white">MODIFIER UN ARTICLE OU PRODUIT</h1>
-
-<div class="container">
-    <form method="post" class="mt-4">
-        {% csrf_token %}
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="name">Nom de l'article</label>
-                <input name="name" type="text" class="form-control" id="name" placeholder="Nom de l'article" value="{{ name }}">
-                {% if errors.name %}
-                    <div class="error">{{ errors.name }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group col-md-6">
-                <label for="stock">Nombre de stock</label>
-                <input name="stock" type="text" class="form-control" id="stock" placeholder="Quantite en stock" value="{{ stock }}">
-                {% if errors.stock %}
-                    <div class="error">{{ errors.stock }}</div>
-                {% endif %}
-            </div>
+<div class="article-form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">Modifier l'article</h1>
+            <p class="form-subtitle">Modifiez les informations de l'article ci-dessous</p>
         </div>
-        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-    </form>
+
+        <form method="post" class="modern-form">
+            {% csrf_token %}
+            
+            <!-- Section Informations de l'article -->
+            <div class="form-section">
+                <h3 class="section-title">Informations de l'article</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Nom de l'article</label>
+                        <input name="name" type="text" class="form-input" id="name" placeholder="Nom de l'article ou produit" value="{{ name }}">
+                        {% if errors.name %}
+                            <div class="error-message">{{ errors.name }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="stock" class="form-label">Quantité en stock</label>
+                        <input name="stock" type="number" class="form-input" id="stock" placeholder="Nombre d'unités disponibles" value="{{ stock }}">
+                        {% if errors.stock %}
+                            <div class="error-message">{{ errors.stock }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    Enregistrer les modifications
+                </button>
+                <a href="{% url 'article-list' %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour à la liste
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-{% endblock content %}
+<style>
+.article-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    border: 1px solid #e9ecef;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-title {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    color: #6c757d;
+    font-size: 16px;
+    margin: 0;
+}
+
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.form-section {
+    border-bottom: 1px solid #f1f3f4;
+    padding-bottom: 24px;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+
+.form-input {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid #dc3545;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    line-height: 1.5;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-card {
+        padding: 24px;
+        margin: 0 16px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Animations */
+.form-card {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

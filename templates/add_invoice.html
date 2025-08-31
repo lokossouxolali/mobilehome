@@ -1,155 +1,556 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <div class="message">{{ message }}</div>
-        {% endfor %}
+<div class="invoice-form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">Créer une nouvelle facture</h1>
+            <p class="form-subtitle">Remplissez les informations ci-dessous pour créer votre facture</p>
     </div>
 
-    <script>
-        setTimeout(function() {
-            document.querySelector('.messages').style.display = 'none';
-        }, 15000); // 15 secondes
-    </script>
-{% endif %}
-
-<br><br>
-<h1 class="text-capitalize text-center mx-10 bg-dark text-white">ENREGISTRER UNE NOUVELLE FACTURE</h1>
-
-<form method="post">
-    {% csrf_token %}
-    <div class="form-row">
-        <div class="form-group col-md-12">
-            <label for="customer">Client</label>
-            <select name="customer" required id="customer" class="form-control">
-                <option>Choisir le client ... </option>
-                {% for customer in customers %}
-                    <option value="{{customer.id}}">{{forloop.counter}}.{{customer.name}}</option>
-                {% endfor %}
-            </select>
-        </div>
+        <form method="post" class="modern-form">
+            {% csrf_token %}
+            
+            <!-- Section Client et Type -->
+            <div class="form-section">
+                <h3 class="section-title">Informations générales</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer" class="form-label">Client</label>
+                        <select name="customer" required id="customer" class="form-select">
+                            <option value="">Sélectionner un client...</option>
+            {% for customer in customers %}
+                                <option value="{{customer.id}}">{{forloop.counter}}. {{customer.name}}</option>
+            {% endfor %}
+        </select>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-12">
-            <label for="invoice">Type de facture</label>
-            <select name="invoice_type" required id="invoice" class="form-control">
-                <option>Choisisr le type de facture ... </option>
-                <option value="R">RECU</option>
-                <option value="P">FACTURE PROFORMAT</option>
-                <option value="I">FACTURE</option>
-            </select>
-        </div>
+                    <div class="form-group">
+                        <label for="invoice" class="form-label">Type de facture</label>
+                        <select name="invoice_type" required id="invoice" class="form-select">
+                            <option value="">Choisir le type...</option>
+                            <option value="R">Reçu</option>
+                            <option value="P">Facture Proforma</option>
+                            <option value="I">Facture</option>
+        </select>
     </div>
+</div>
+            </div>
+
+            <!-- Section Articles -->
+            <div class="form-section">
+                <h3 class="section-title">Articles</h3>
     <div id="wrapper">
-        <div class="form-row">
-            <div class="form-group col-md-4">
-                <label for="article-1">#1 Choisir l'article</label>
-                <select name="article" required id="article" class="form-control">
-                    <option>Choisir l'article ... </option>
+                    <div class="article-row" data-article-id="1">
+                        <div class="form-group">
+                            <label for="article-1" class="form-label">Article</label>
+                            <select name="article" required id="article-1" class="form-select">
+                                <option value="">Sélectionner un article...</option>
                     {% for article in articles %}
-                        <option value="{{article.id}}">{{forloop.counter}}.{{article.name}}</option>
+                                    <option value="{{article.id}}">{{forloop.counter}}. {{article.name}}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-group col-md-2">
-                <label for="qty-1">Quantite</label>
-                <input type="number" min="1" step="0.1" name="qty" required class="form-control" id="qty-1">
+                        <div class="form-group">
+                            <label for="qty-1" class="form-label">Quantité</label>
+                            <input type="number" min="1" step="0.1" name="qty" required class="form-input" id="qty-1" placeholder="0" onchange="handleChangeSingleArticle(this.id)">
+                        </div>
+                        <div class="form-group">
+                            <label for="unit-1" class="form-label">Prix unitaire</label>
+                            <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="unit" required class="form-input" id="unit-1" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="total-a-1" class="form-label">Total</label>
+                            <input type="number" min="1" step="0.1" readonly name="total-a" required class="form-input total-field" id="total-a-1" value="0.00">
+                        </div>
+                        <div class="form-group remove-btn-group">
+                            <button type="button" class="btn-remove" onclick="removeArticleRow(this)" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'ajout/suppression -->
+                <div class="article-actions">
+                    <button type="button" id="btn-add" class="btn-add">
+                        <i class="fas fa-plus"></i>
+                        Ajouter un article
+                    </button>
+                    <button type="button" id="btn-remove" class="btn-remove-action">
+                        <i class="fas fa-minus"></i>
+                        Supprimer le dernier
+                    </button>
             </div>
-            <div class="form-group col-md-3">
-                <label for="unit-1">Prix Unitaire</label>
-                <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="unit" required class="form-control" id="unit-1">
             </div>
-            <div class="form-group col-md-3">
-                <label for="total-a-1">Total</label>
-                <input type="number" min="1" step="0.1" readonly name="total-a" required class="form-control" id="total-a-1">
+
+            <!-- Section Totaux -->
+            <div class="form-section total-section">
+                <div class="total-row">
+                    <div class="form-group total-group">
+                        <label for="total" class="form-label">Total général</label>
+                        <input value="0" type="number" step="0.1" name="total" readonly class="form-input grand-total" id="total">
             </div>
         </div>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-12">
-            <label for="total">Total</label>
-            <input value="0" type="number" step="0.1" name="total" readonly class="form-control" id="total">
+
+            <!-- Section Commentaires -->
+            <div class="form-section">
+                <h3 class="section-title">Commentaires</h3>
+                <div class="form-group">
+                    <label for="comment" class="form-label">Notes additionnelles</label>
+                    <textarea class="form-textarea" name="comment" id="comment" rows="3" placeholder="Ajoutez des commentaires ou notes..."></textarea>
         </div>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-6">
-            <label for="comment">Commentaires</label>
-            <textarea class="form-control" name="comment" id="comment" cols="30" rows="1"></textarea>
+
+            <!-- Boutons d'action -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    Créer la facture
+                </button>
+                <a href="{% url 'home' %}" class="btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </a>
         </div>
+        </form>
     </div>
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
-</form>
-<br><br>
-<div class="form-row">
-    <button id="btn-add" class="btn btn-outline-danger w58 col-md-6">Ajouter une ligne d'article</button>
-    <button id="btn-remove" class="btn btn-outline-warning w58 col-md-6">Supprimer une ligne d'article</button>
 </div>
 
-<br><br><br><br>
+<style>
 
-<script type="text/javascript">
+.form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    border: 1px solid #e9ecef;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-title {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    color: #6c757d;
+    font-size: 16px;
+    margin: 0;
+}
+
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.form-section {
+    border-bottom: 1px solid #f1f3f4;
+    padding-bottom: 24px;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.article-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.article-row:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+
+.form-select, .form-input, .form-textarea {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-select:focus, .form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.total-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 0 -40px 32px -40px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.total-group {
+    min-width: 200px;
+}
+
+.total-group .form-label {
+    color: white;
+    font-weight: 600;
+}
+
+.grand-total {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.total-field {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.article-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.btn-add, .btn-remove-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    line-height: 1.5;
+}
+
+.btn-add {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-add:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-remove-action {
+    background: #f8f9fa;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.btn-remove-action:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-remove {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 12px;
+}
+
+.btn-remove:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.remove-btn-group {
+    display: flex;
+    align-items: end;
+    height: 100%;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    line-height: 1.5;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+}
+
+/* Animations */
+.form-card {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.article-row {
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let articleCounter = 1;
+    
     // Ajouter une nouvelle ligne d'article
-    $(document).on('click', '#btn-add', function(e) {
-        e.preventDefault(); // Empêche le comportement par défaut du bouton
-        var number = $('#wrapper').children().length + 1;
-        let formAdd = `
-            <div class="form-row">
-                <div class="form-group col-md-4">
-                    <label for="article-${number}">#${number} Choisir l'article</label>
-                    <select name="article" required id="article" class="form-control">
-                        <option>Choisir l'article ... </option>
-                        {% for article in articles %}
-                            <option value="{{article.id}}">{{forloop.counter}}.{{article.name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group col-md-2">
-                    <label for="qty-${number}">Quantity</label>
-                    <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="qty" required class="form-control" id="qty-${number}">
-                </div>
-                <div class="form-group col-md-3">
-                    <label for="unit-${number}">Unit Price</label>
-                    <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="unit" required class="form-control" id="unit-${number}">
-                </div>
-                <div class="form-group col-md-3">
-                    <label for="total-a-${number}">Total</label>
-                    <input type="number" min="1" step="0.1" readonly name="total-a" required class="form-control" id="total-a-${number}">
-                </div>
-            </div>`;
-        $("#wrapper").append(formAdd); // Ajouter une nouvelle ligne
+    document.getElementById('btn-add').addEventListener('click', function(e) {
+        e.preventDefault();
+        articleCounter++;
+        addArticleRow(articleCounter);
+        updateRemoveButtons();
     });
-
 
     // Supprimer la dernière ligne d'article
-    $(document).on('click', '#btn-remove', function(e) {
-        e.preventDefault(); // Empêche le comportement par défaut du bouton
-        $("#wrapper").children().last().remove();
-        updateTotal(); // Recalculer le total après suppression
+    document.getElementById('btn-remove').addEventListener('click', function(e) {
+        e.preventDefault();
+        const wrapper = document.getElementById('wrapper');
+        const rows = wrapper.querySelectorAll('.article-row');
+        
+        if (rows.length > 1) {
+            rows[rows.length - 1].remove();
+            articleCounter--;
+            updateTotal();
+            updateRemoveButtons();
+        }
     });
+    
+    function addArticleRow(number) {
+        const wrapper = document.getElementById('wrapper');
+        const newRow = document.createElement('div');
+        newRow.className = 'article-row';
+        newRow.setAttribute('data-article-id', number);
+        
+        newRow.innerHTML = `
+            <div class="form-group">
+                <label for="article-${number}" class="form-label">Article</label>
+                <select name="article" required id="article-${number}" class="form-select">
+                    <option value="">Sélectionner un article...</option>
+                    {% for article in articles %}
+                        <option value="{{article.id}}">{{forloop.counter}}. {{article.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="qty-${number}" class="form-label">Quantité</label>
+                <input type="number" min="1" step="0.1" name="qty" required class="form-input" id="qty-${number}" placeholder="0" onchange="handleChangeSingleArticle(this.id)">
+            </div>
+            <div class="form-group">
+                <label for="unit-${number}" class="form-label">Prix unitaire</label>
+                <input type="number" min="1" step="0.1" onchange="handleChangeSingleArticle(this.id)" name="unit" required class="form-input" id="unit-${number}" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label for="total-a-${number}" class="form-label">Total</label>
+                <input type="number" min="1" step="0.1" readonly name="total-a" required class="form-input total-field" id="total-a-${number}" value="0.00">
+            </div>
+            <div class="form-group remove-btn-group">
+                <button type="button" class="btn-remove" onclick="removeArticleRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        wrapper.appendChild(newRow);
+    }
+    
+    function updateRemoveButtons() {
+        const rows = document.querySelectorAll('.article-row');
+        const removeButtons = document.querySelectorAll('.btn-remove');
+        
+        if (rows.length === 1) {
+            removeButtons.forEach(btn => btn.style.display = 'none');
+        } else {
+            removeButtons.forEach(btn => btn.style.display = 'flex');
+        }
+    }
+    
+    // Initialiser l'affichage des boutons de suppression
+    updateRemoveButtons();
+});
+
+// Supprimer une ligne d'article spécifique
+function removeArticleRow(button) {
+    const row = button.closest('.article-row');
+    row.remove();
+    updateTotal();
+    
+    // Mettre à jour l'affichage des boutons de suppression
+    const rows = document.querySelectorAll('.article-row');
+    const removeButtons = document.querySelectorAll('.btn-remove');
+    
+    if (rows.length === 1) {
+        removeButtons.forEach(btn => btn.style.display = 'none');
+    }
+}
 
     // Calcul du total pour une ligne
     function handleChangeSingleArticle(id) {
         let articleId = id.split('-')[1]; // Extraire le numéro de l'article
-        let qty = parseFloat($(`#qty-${articleId}`).val()) || 0;
-        let unit = parseFloat($(`#unit-${articleId}`).val()) || 0;
+    let qty = parseFloat(document.getElementById(`qty-${articleId}`).value) || 0;
+    let unit = parseFloat(document.getElementById(`unit-${articleId}`).value) || 0;
         let totalLine = qty * unit;
-        $(`#total-a-${articleId}`).val(totalLine.toFixed(2)); // Mettre à jour le total de la ligne
-        updateTotal(); // Recalculer le total général
+    document.getElementById(`total-a-${articleId}`).value = totalLine.toFixed(2);
+    updateTotal();
     }
 
     // Calcul du total général
     function updateTotal() {
         let grandTotal = 0;
-        $('[id^="total-a-"]').each(function() {
-            grandTotal += parseFloat($(this).val()) || 0;
-        });
-        $('#total').val(grandTotal.toFixed(2)); // Mettre à jour le total général
+    const totalFields = document.querySelectorAll('[id^="total-a-"]');
+    
+    totalFields.forEach(field => {
+        grandTotal += parseFloat(field.value) || 0;
+    });
+    
+    document.getElementById('total').value = grandTotal.toFixed(2);
     }
 </script>
-
-
-
-{% endblock content%}
+{% endblock %}

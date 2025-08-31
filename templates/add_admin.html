@@ -1,48 +1,245 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <div class="message">{{ message }}</div>
-        {% endfor %}
-    </div>
+<div class="admin-form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">Ajouter un administrateur</h1>
+            <p class="form-subtitle">Remplissez les informations ci-dessous pour créer un nouveau compte administrateur</p>
+        </div>
 
-    <script>
-        setTimeout(function() {
-            document.querySelector('.messages').style.display = 'none';
-        }, 15000); // 15 secondes
-    </script>
-{% endif %}
-<br><br>
-<h1 class="text-capitalize text-center mx-10 bg-dark text-white">AJOUTER UN ADMINISTRATEUR</h1>
+        <form method="post" class="modern-form">
+            {% csrf_token %}
+            
+            <!-- Section Informations de connexion -->
+            <div class="form-section">
+                <h3 class="section-title">Informations de connexion</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input name="username" required type="text" class="form-input" id="username" placeholder="Nom d'utilisateur unique">
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input name="email" required type="email" class="form-input" id="email" placeholder="adresse@exemple.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password1" class="form-label">Mot de passe</label>
+                        <input name="password1" required type="password" class="form-input" id="password1" placeholder="Mot de passe sécurisé">
+                    </div>
+                    <div class="form-group">
+                        <label for="password2" class="form-label">Confirmer le mot de passe</label>
+                        <input name="password2" required type="password" class="form-input" id="password2" placeholder="Répétez le mot de passe">
+                    </div>
+                </div>
+            </div>
 
-<form method="post">
-    {% csrf_token %}
-    <div class="form-row">
-        <div class="form-group col-md-6">
-            <label for="username">Nom d'utilisateur</label>
-            <input name="username" required type="text" class="form-control" id="username" placeholder="Nom d'utilisateur">
-        </div>
-        <div class="form-group col-md-6">
-            <label for="email">Email</label>
-            <input name="email" required type="email" class="form-control" id="email" placeholder="Adresse email">
-        </div>
+            <!-- Boutons d'action -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Créer l'administrateur
+                </button>
+                <a href="{% url 'admin-list' %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour à la liste
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-6">
-            <label for="password1">Mot de passe</label>
-            <input name="password1" required type="password" class="form-control" id="password1" placeholder="Mot de passe">
-        </div>
-        <div class="form-group col-md-6">
-            <label for="password2">Confirmer le mot de passe</label>
-            <input name="password2" required type="password" class="form-control" id="password2" placeholder="Confirmer le mot de passe">
-        </div>
-    </div>
-    <button type="submit" class="btn btn-primary">Créer</button>
-</form>
-<br>
-<a href="{% url 'admin-list' %}" class="btn btn-secondary">Retour à la liste des administrateurs</a>
-<br><br>
-{% endblock content %}
+</div>
+
+<style>
+
+.form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    border: 1px solid #e9ecef;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-title {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    color: #6c757d;
+    font-size: 16px;
+    margin: 0;
+}
+
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.form-section {
+    border-bottom: 1px solid #f1f3f4;
+    padding-bottom: 24px;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+
+.form-input {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    line-height: 1.5;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-card {
+        padding: 24px;
+        margin: 0 16px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Animations */
+.form-card {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

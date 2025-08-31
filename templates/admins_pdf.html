@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Administrateurs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            background-color: #6366f1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .summary {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary h2 {
+            color: #1e293b;
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            flex: 0 0 calc(50% - 10px);
+            margin: 0;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th {
+            background-color: #6366f1;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 11px;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👨‍💼 LISTE DES ADMINISTRATEURS</h1>
+        <p>Généré le {{ date|date:"d/m/Y à H:i" }}</p>
+    </div>
+
+    <div class="summary">
+        <h2>📊 Résumé des Administrateurs</h2>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_admins }}</div>
+                <div class="stat-label">Total des Admins</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ active_admins }}</div>
+                <div class="stat-label">Admins Actifs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ superusers }}</div>
+                <div class="stat-label">Super Utilisateurs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ staff_users }}</div>
+                <div class="stat-label">Utilisateurs Staff</div>
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>NOM D'UTILISATEUR</th>
+                <th>EMAIL</th>
+                <th>DATE D'INSCRIPTION</th>
+                <th>STATUT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for admin in admins %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ admin.username }}</td>
+                <td>{{ admin.email }}</td>
+                <td>{{ admin.date_joined|date:"d/m/Y" }}</td>
+                <td>
+                    {% if admin.is_superuser %}
+                        <span style="color: #f59e0b; font-weight: bold;">Super Admin</span>
+                    {% elif admin.is_staff %}
+                        <span style="color: #10b981; font-weight: bold;">Staff</span>
+                    {% else %}
+                        <span style="color: #6b7280; font-weight: bold;">Utilisateur</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>© {{ date|date:"Y" }} MobileHouse - Rapport généré automatiquement</p>
+    </div>
+</body>
+</html>

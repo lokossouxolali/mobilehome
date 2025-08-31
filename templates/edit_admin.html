@@ -1,46 +1,262 @@
-<!--{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <h1 class="alert {{ message.tags }}">{{ message }}</h1>
-            {% endfor %}
+<div class="admin-form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">Modifier l'administrateur</h1>
+            <p class="form-subtitle">Modifiez les informations de l'administrateur ci-dessous</p>
         </div>
-    {% endif %}
 
-    <br><br>
-    <h1 class="text-capitalize text-center mx-10 bg-dark text-white">MODIFIER L'ADMINISTRATEUR</h1>
-
-    <div class="container mt-5">
-        <form method="post">
+        <form method="post" class="modern-form">
             {% csrf_token %}
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="username">Nom d'utilisateur</label>
-                    {{ form.username }}
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="email">Email</label>
-                    {{ form.email }}
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="first_name">Prénom</label>
-                    {{ form.first_name }}
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="last_name">Nom</label>
-                    {{ form.last_name }}
+            
+            <!-- Section Informations de connexion -->
+            <div class="form-section">
+                <h3 class="section-title">Informations de connexion</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        {{ form.email }}
+                    </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-success">Modifier</button>
-            <a href="{% url 'admin-list' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+            <!-- Section Informations personnelles -->
+            <div class="form-section">
+                <h3 class="section-title">Informations personnelles</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name" class="form-label">Prénom</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name" class="form-label">Nom</label>
+                        {{ form.last_name }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    Enregistrer les modifications
+                </button>
+                <a href="{% url 'admin-list' %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour à la liste
+                </a>
+            </div>
         </form>
     </div>
+</div>
 
-{% endblock content %}
--->
+<style>
+.admin-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    border: 1px solid #e9ecef;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-title {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    color: #6c757d;
+    font-size: 16px;
+    margin: 0;
+}
+
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.form-section {
+    border-bottom: 1px solid #f1f3f4;
+    padding-bottom: 24px;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Styles pour les champs Django forms */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    line-height: 1.5;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-card {
+        padding: 24px;
+        margin: 0 16px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Animations */
+.form-card {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

@@ -29,6 +29,27 @@
     --header-height: 80px;
     --border-radius: 12px;
     --border-radius-sm: 8px;
+    
+    /* Message colors */
+    --success-bg: #ecfdf5;
+    --success-border: #10b981;
+    --success-text: #065f46;
+    --success-icon: #10b981;
+    
+    --error-bg: #fef2f2;
+    --error-border: #ef4444;
+    --error-text: #991b1b;
+    --error-icon: #ef4444;
+    
+    --warning-bg: #fffbeb;
+    --warning-border: #f59e0b;
+    --warning-text: #92400e;
+    --warning-icon: #f59e0b;
+    
+    --info-bg: #eff6ff;
+    --info-border: #3b82f6;
+    --info-text: #1e40af;
+    --info-icon: #3b82f6;
 }
 
 * {
@@ -218,9 +239,7 @@ body {
     background: var(--bg-secondary);
 }
 
-.messages-container {
-    margin-bottom: 24px;
-}
+
 
 /* Cards */
 .card {
@@ -699,6 +718,177 @@ body {
 
 .gap-3 {
     gap: 1rem;
+}
+
+/* Messages Styles */
+.messages {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    width: 100%;
+}
+
+.message {
+    margin-bottom: 12px;
+    padding: 16px 20px;
+    border-radius: var(--border-radius-sm);
+    border-left: 4px solid;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: slideInRight 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+}
+
+.message.success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+}
+
+.message.error {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+    color: var(--error-text);
+}
+
+.message.warning {
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+    color: var(--warning-text);
+}
+
+.message.info {
+    background: var(--info-bg);
+    border-color: var(--info-border);
+    color: var(--info-text);
+}
+
+.message-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+.message.success .message-icon {
+    background: var(--success-icon);
+    color: white;
+}
+
+.message.error .message-icon {
+    background: var(--error-icon);
+    color: white;
+}
+
+.message.warning .message-icon {
+    background: var(--warning-icon);
+    color: white;
+}
+
+.message.info .message-icon {
+    background: var(--info-icon);
+    color: white;
+}
+
+.message-content {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.message-close {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.message-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Message animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Message auto-hide animation */
+.message.hiding {
+    animation: slideOutRight 0.3s ease-in forwards;
+}
+
+/* Responsive messages */
+@media (max-width: 768px) {
+    .messages {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .message {
+        padding: 14px 16px;
+        font-size: 13px;
+    }
 }
 
 /* Responsive utilities */

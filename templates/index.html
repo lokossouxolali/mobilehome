@@ -55,7 +55,7 @@
     <div class="stat-card fade-in">
         <div class="stat-header">
             <div>
-                <div class="stat-value">{{ total_revenue|default:"0"|floatformat:2 }} TND</div>
+                <div class="stat-value">{{ total_revenue|default:"0"|floatformat:2 }} FCFA</div>
                 <div class="stat-label">Revenus</div>
             </div>
             <div class="stat-icon info">
@@ -150,19 +150,19 @@
                 </svg>
             </div>
             
-            <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                </svg>
-                Exporter PDF
-            </button>
+                    <a href="{% url 'export-dashboard-pdf' %}" class="export-btn" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+            Exporter PDF
+        </a>
             
-            <button class="export-btn" type="button" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z"/>
-                </svg>
-                Exporter Excel
-            </button>
+                    <a href="{% url 'export-dashboard-excel' %}" class="export-btn" style="background-color: #e9ecef; border: none; border-radius: 6px; padding: 8px 12px; color: #495057; font-size: 14px; display: flex; align-items: center; gap: 5px; height: 36px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-decoration: none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3,3H21V5H3V3M3,7H21V9H3V7M3,11H21V13H3V11M3,15H21V17H3V15M3,19H21V21H3V19Z"/>
+            </svg>
+            Exporter Excel
+        </a>
         </div>
     </div>
     
@@ -282,7 +282,7 @@
         <nav aria-label="Pagination">
             <ul class="pagination justify-content-center mb-0">
                 {% if invoices.has_previous %}
-                    <li class="page-item">
+                    <li class="page-item mx-2">
                         <a class="page-link" href="?page={{ invoices.previous_page_number }}">
                             <i class="fas fa-chevron-left"></i>
                         </a>
@@ -291,18 +291,18 @@
                 
                 {% for page_number in invoices.paginator.page_range %}
                     {% if invoices.number == page_number %}
-                        <li class="page-item active">
+                        <li class="page-item active mx-2">
                             <span class="page-link">{{ page_number }}</span>
                         </li>
                     {% else %}
-                        <li class="page-item">
+                        <li class="page-item mx-2">
                             <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
                 
                 {% if invoices.has_next %}
-                    <li class="page-item">
+                    <li class="page-item mx-2">
                         <a class="page-link" href="?page={{ invoices.next_page_number }}">
                             <i class="fas fa-chevron-right"></i>
                         </a>
